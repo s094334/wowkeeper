@@ -16,7 +16,8 @@
 	"upload_source_maps": true,
 	"routes": [
 		{ "pattern": "wowkeeper.xin-ping.com", "custom_domain": true }
-	]
+	],
+	"preview_urls": true
 	/**
 	 * Smart Placement
 	 * https://developers.cloudflare.com/workers/configuration/smart-placement/#smart-placement
