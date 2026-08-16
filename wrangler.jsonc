@@ -1,0 +1,15 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "wowkeeper-app",
+  "main": "worker/index.ts",
+  "compatibility_date": "2026-08-14",
+  "assets": {
+    "not_found_handling": "single-page-application"
+  },
+  "observability": {
+    "enabled": true
+  },
+  "upload_source_maps": true,
+  "routes": [{ "pattern": "wowkeeper.xin-ping.com", "custom_domain": true }],
+  "preview_urls": true
+}
