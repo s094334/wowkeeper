@@ -21,7 +21,7 @@ export function Login() {
   };
 
   return (
-    <main className="flex flex-1 flex-col justify-center gap-8 px-6 py-6 sm:mx-auto sm:w-full sm:max-w-105">
+    <main className="flex flex-1 flex-col gap-8 px-6 pt-14 pb-10 sm:mx-auto sm:w-full sm:max-w-105 sm:justify-center sm:py-12">
       <div className="flex flex-col gap-3.5">
         <p className="text-terracotta text-sm font-semibold tracking-[0.02em]">
           哇管家 WowKeeper
