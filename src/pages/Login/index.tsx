@@ -1,26 +1,40 @@
 import { useForm, type SubmitHandler } from "react-hook-form";
-import { Link, useNavigate } from "react-router";
-import { fields, subTitle, type RegisterFormValues } from "./fields";
+import { Link, useLocation, useNavigate } from "react-router";
+import { fields, subTitle, type LoginFormValues } from "./fields";
 
-export function Register() {
+export function Login() {
   const navigate = useNavigate();
+  const location = useLocation();
+
+  const justRegistered = (location.state as { justRegistered?: boolean } | null)
+    ?.justRegistered;
+
   const {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
-  } = useForm<RegisterFormValues>({ mode: "onBlur" });
+  } = useForm<LoginFormValues>({ mode: "onBlur" });
 
-  const onSubmit: SubmitHandler<RegisterFormValues> = (values) => {
+  const onSubmit: SubmitHandler<LoginFormValues> = (values) => {
     console.log(values);
-    navigate("/login", { replace: true, state: { justRegistered: true } });
+    navigate("/", { replace: true });
   };
 
   return (
-    <main className="flex flex-1 flex-col gap-7 px-6 py-4 sm:mx-auto sm:w-full sm:max-w-105 sm:justify-center sm:py-12">
-      <div className="flex flex-col gap-2.5">
-        <h1 className="text-title font-semibold">建立帳號</h1>
+    <main className="flex flex-1 flex-col justify-center gap-8 px-6 py-6 sm:mx-auto sm:w-full sm:max-w-105">
+      <div className="flex flex-col gap-3.5">
+        <p className="text-terracotta text-sm font-semibold tracking-[0.02em]">
+          哇管家 WowKeeper
+        </p>
+        <h1 className="text-hero font-semibold">登入</h1>
         <p className="text-ink-muted text-body">{subTitle}</p>
       </div>
+
+      {justRegistered && (
+        <p className="bg-lamp-green-bg text-lamp-green-fg rounded-sm px-3 py-2.5 text-xs">
+          註冊成功，請用剛才的帳號登入。
+        </p>
+      )}
 
       <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-7">
         <div className="wk-card flex flex-col gap-4 p-4.5">
@@ -63,12 +77,12 @@ export function Register() {
             disabled={isSubmitting}
             className="wk-cta w-full cursor-pointer disabled:opacity-60"
           >
-            建立帳號
+            登入
           </button>
           <p className="text-ink-muted text-center text-xs">
-            已經有帳號？
-            <Link to="/login" className="text-ink font-medium underline">
-              登入
+            還沒有帳號？
+            <Link to="/register" className="text-ink font-medium underline">
+              註冊
             </Link>
           </p>
         </div>
