@@ -1,9 +1,5 @@
 import LogOut from "../assets/icons/LogOut.svg?react";
 
-type NavItem = { label: string; active?: boolean };
-
-const NAV_ITEMS: NavItem[] = [{ label: "家電總覽", active: true }];
-
 type HeaderProps = {
   onLogout?: () => void;
 };
@@ -15,20 +11,12 @@ export function Header({ onLogout }: HeaderProps) {
         哇管家 WowKeeper
       </span>
       <nav className="hidden gap-1 sm:flex">
-        {NAV_ITEMS.map(({ label, active }) => (
-          <a
-            key={label}
-            href="#"
-            className={
-              "rounded-xs px-3 py-[7px] text-sm whitespace-nowrap " +
-              (active
-                ? "bg-cream-100 text-ink font-medium"
-                : "text-ink-muted hover:bg-cream-100")
-            }
-          >
-            {label}
-          </a>
-        ))}
+        <a
+          href="#"
+          className="bg-cream-100 text-ink rounded-xs px-3 py-[7px] text-sm font-medium whitespace-nowrap"
+        >
+          家電總覽
+        </a>
       </nav>
 
       <span className="flex-1" />
