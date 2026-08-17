@@ -1,0 +1,154 @@
+@theme {
+  /* ---- 暖色中性（由淺到深）---- */
+  --color-cream-50: #fbf8f3; /* 畫面底色 / 手機框底 */
+  --color-cream-100: #f5eee5; /* icon 底、hover 填色、桌機頁面底 */
+  --color-cream-200: #f3ebe1; /* 次級區塊、唯讀欄位 */
+  --color-cream-300: #efe7dc; /* 細分隔線、列表 hairline */
+  --color-cream-400: #e7dfd4; /* 預設邊框 */
+  --color-cream-500: #d6c7b6; /* 虛線框 / 邊框 hover */
+  --color-cream-600: #c4b6a6; /* 邊框 hover（卡片）*/
+  --color-cream-700: #b6a99c; /* placeholder、停用文字 */
+  --color-cream-800: #a2968a; /* 次要 icon */
+  --color-cream-900: #9a8e82; /* 未選中分頁 */
+
+  --color-ink: #2b2622; /* 主文字 */
+  --color-ink-muted: #7a6e63; /* 次要文字、標籤 */
+  --color-surface: #ffffff; /* 卡片 */
+
+  /* ---- 品牌重點（陶土）---- */
+  --color-terracotta: #b4653f;
+  --color-terracotta-hover: #9c5432;
+  --color-terracotta-tint: #f1e6da;
+
+  /* ---- 狀態燈號（紅／黃／綠）---- */
+  --color-lamp-red: #c00f0c;
+  --color-lamp-red-bg: #fee9e7;
+  --color-lamp-red-fg: #900b09;
+  --color-lamp-red-ring: #fee9e7;
+
+  --color-lamp-amber: #e5a000;
+  --color-lamp-amber-bg: #fffbeb;
+  --color-lamp-amber-fg: #975102;
+  --color-lamp-amber-ring: #fff4d6;
+
+  --color-lamp-green: #009951;
+  --color-lamp-green-bg: #ebffee;
+  --color-lamp-green-fg: #008043;
+  --color-lamp-green-ring: #e0f7e7;
+
+  --color-danger: #c42a2a; /* 刪除／登出文字 */
+
+  /* ---- 字體 ---- */
+  --font-sans: Inter, "Noto Sans TC", system-ui, sans-serif;
+
+  /* ---- 圓角 ---- */
+  --radius-xs: 4px; /* 小控件、表格內按鈕 */
+  --radius-sm: 8px; /* icon 方塊 */
+  --radius-md: 12px; /* 輸入框、按鈕 */
+  --radius-lg: 16px; /* 主要 CTA、空狀態方塊 */
+  --radius-xl: 20px; /* 浮起表單卡 */
+  --radius-frame: 32px; /* 手機外框 */
+
+  /* ---- 陰影 ---- */
+  --shadow-card: 0 2px 10px rgba(70, 52, 34, 0.06);
+  --shadow-card-strong: 0 2px 10px rgba(70, 52, 34, 0.08);
+  --shadow-cta: 0 4px 14px rgba(180, 101, 63, 0.25);
+  --shadow-overlay: 0 4px 16px rgba(12, 12, 13, 0.1);
+  --shadow-sheet: 0 -4px 20px rgba(70, 52, 34, 0.07);
+
+  /* ---- 字級（實際用到的階）---- */
+  --text-hero: 38px; /* 登入標語 */
+  --text-title: 34px; /* 建立帳號 */
+  --text-h1: 28px;
+  --text-h2: 24px;
+  --text-h3: 18px;
+  --text-body: 15px;
+  --text-sm: 14px;
+  --text-xs: 13px;
+  --text-2xs: 12px;
+  --text-3xs: 11px; /* 底部導覽、等寬字標籤 */
+}
+
+/* 常見組合，可直接套用 */
+@layer components {
+  .wk-card {
+    background: var(--color-surface);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-card);
+  }
+  .wk-card-outline {
+    background: var(--color-surface);
+    border: 1px solid var(--color-cream-400);
+    border-radius: var(--radius-sm);
+  }
+  .wk-cta {
+    background: var(--color-terracotta);
+    color: #fff;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-cta);
+    height: 50px;
+    font-weight: 500;
+  }
+  .wk-cta:hover {
+    background: var(--color-terracotta-hover);
+  }
+
+  /* 燈號膠囊：圓點 + 文字 */
+  .wk-lamp {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 9px;
+    border-radius: 9999px;
+    font-size: var(--text-2xs);
+    font-weight: 500;
+    white-space: nowrap;
+  }
+  .wk-lamp-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 9999px;
+    flex-shrink: 0;
+  }
+
+  .wk-lamp-overdue {
+    background: var(--color-lamp-red-bg);
+    color: var(--color-lamp-red-fg);
+  }
+  .wk-lamp-overdue .wk-lamp-dot {
+    background: var(--color-lamp-red);
+  }
+  .wk-lamp-soon {
+    background: var(--color-lamp-amber-bg);
+    color: var(--color-lamp-amber-fg);
+  }
+  .wk-lamp-soon .wk-lamp-dot {
+    background: var(--color-lamp-amber);
+  }
+  .wk-lamp-ok {
+    background: var(--color-lamp-green-bg);
+    color: var(--color-lamp-green-fg);
+  }
+  .wk-lamp-ok .wk-lamp-dot {
+    background: var(--color-lamp-green);
+  }
+
+  /* 卡片右上角燈點（帶光暈）*/
+  .wk-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 9999px;
+  }
+  .wk-dot-overdue {
+    background: var(--color-lamp-red);
+    box-shadow: 0 0 0 3px var(--color-lamp-red-ring);
+  }
+  .wk-dot-soon {
+    background: var(--color-lamp-amber);
+    box-shadow: 0 0 0 3px var(--color-lamp-amber-ring);
+  }
+  .wk-dot-ok {
+    background: var(--color-lamp-green);
+    box-shadow: 0 0 0 3px var(--color-lamp-green-ring);
+  }
+}
