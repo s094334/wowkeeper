@@ -4,7 +4,9 @@ type HeaderProps = {
   onLogout?: () => void;
 };
 
-export function Header({ onLogout }: HeaderProps) {
+export function Header(props: HeaderProps) {
+  const { onLogout } = props;
+
   return (
     <header className="border-cream-400 flex h-15 items-center gap-4 border-b px-5 sm:gap-8 sm:px-8">
       <span className="text-terracotta text-base font-semibold tracking-[-0.01em] whitespace-nowrap">
