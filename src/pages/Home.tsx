@@ -4,23 +4,25 @@ import { StatusLamp } from "../components/StatusLamp";
 import { APPLIANCES } from "../data/appliances";
 import Plus from "../assets/icons/Plus.svg?react";
 
-function summarise(appliances: Appliance[]): {
-  status: LampStatus;
-  text: string;
-} {
-  const pending = appliances.filter((a) => a.status !== "ok").length;
+function summarise(appliances: Appliance[]) {
   const overdue = appliances.filter((a) => a.status === "overdue").length;
+  const pending = appliances.filter((a) => a.status !== "ok").length;
 
-  return {
-    status: overdue > 0 ? "overdue" : pending > 0 ? "soon" : "ok",
-    text: pending > 0 ? `${pending} 件待換` : "全部正常",
-  };
+  let status: LampStatus = "ok";
+  if (overdue > 0) {
+    status = "overdue";
+  } else if (pending > 0) {
+    status = "soon";
+  }
+
+  const text = pending > 0 ? `${pending} 件待換` : "全部正常";
+
+  return { status, text };
 }
 
 function EmptyState() {
   return (
     <div className="flex flex-1 flex-col items-center justify-center gap-6 pb-10 text-center">
-      {/* Will open the camera to capture a nameplate. */}
       <button
         type="button"
         className="border-cream-500 text-cream-700 hover:bg-cream-100 hover:border-cream-800 hover:text-ink flex size-18 cursor-pointer items-center justify-center rounded-lg border border-dashed"
@@ -30,7 +32,7 @@ function EmptyState() {
       <div className="flex max-w-65 flex-col gap-2">
         <p className="text-h3 font-semibold tracking-[-0.02em]">先建第一台</p>
         <p className="text-ink-muted text-sm leading-relaxed text-pretty">
-          登記名稱、型號與購買日期，之後濾網該換，我會提醒你。
+          建立您的第一個家電，開始追蹤濾網
         </p>
       </div>
       <button type="button" className="wk-cta w-full max-w-70 cursor-pointer">
@@ -41,7 +43,7 @@ function EmptyState() {
 }
 
 const PAGE = "flex flex-1 flex-col px-5 py-8 sm:px-8";
-const SHOW_EMPTY_STATE = true;
+const SHOW_EMPTY_STATE = false;
 
 export function Home() {
   const appliances: Appliance[] = SHOW_EMPTY_STATE ? [] : APPLIANCES;
