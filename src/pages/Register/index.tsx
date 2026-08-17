@@ -16,7 +16,7 @@ export function Register() {
   };
 
   return (
-    <main className="flex flex-1 flex-col gap-7 px-6 py-4 sm:mx-auto sm:w-full sm:max-w-105 sm:justify-center sm:py-12">
+    <main className="flex flex-1 flex-col gap-7 px-6 py-4 sm:mx-auto sm:w-full sm:max-w-120 sm:justify-center sm:py-12">
       <div className="flex flex-col gap-2.5">
         <h1 className="text-title font-semibold">建立帳號</h1>
         <p className="text-ink-muted text-body">{subTitle}</p>
