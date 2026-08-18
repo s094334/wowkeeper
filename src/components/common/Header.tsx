@@ -1,5 +1,5 @@
 import { Link } from "react-router";
-import LogOut from "../assets/icons/LogOut.svg?react";
+import LogOut from "../../assets/icons/LogOut.svg?react";
 
 type HeaderProps = {
   onLogout?: () => void;

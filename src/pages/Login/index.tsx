@@ -1,9 +1,9 @@
 import { useState } from "react";
 import { useForm, type SubmitHandler } from "react-hook-form";
 import { Link, useLocation, useNavigate } from "react-router";
-import { AuthLayout } from "../../components/AuthLayout";
-import { FormError } from "../../components/FormError";
-import { FormField } from "../../components/FormField";
+import { AuthLayout } from "../../components/common/AuthLayout";
+import { FormError } from "../../components/common/FormError";
+import { FormField } from "../../components/common/FormField";
 import { fields, subTitle, type LoginFormValues } from "./fields";
 
 export function Login() {

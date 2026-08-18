@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import AlertCircle from "../assets/icons/AlertCircle.svg?react";
+import AlertCircle from "../../assets/icons/AlertCircle.svg?react";
 
 export function FormError({ children }: { children: ReactNode }) {
   return (
