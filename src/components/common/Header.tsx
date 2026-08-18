@@ -1,4 +1,5 @@
-import LogOut from "../assets/icons/LogOut.svg?react";
+import { Link } from "react-router";
+import LogOut from "../../assets/icons/LogOut.svg?react";
 
 type HeaderProps = {
   onLogout?: () => void;
@@ -13,12 +14,12 @@ export function Header(props: HeaderProps) {
         哇管家 WowKeeper
       </span>
       <nav className="hidden gap-1 sm:flex">
-        <a
-          href="#"
+        <Link
+          to="/"
           className="bg-cream-100 text-ink rounded-xs px-3 py-[7px] text-sm font-medium whitespace-nowrap"
         >
           家電總覽
-        </a>
+        </Link>
       </nav>
 
       <span className="flex-1" />
