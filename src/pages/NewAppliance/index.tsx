@@ -3,6 +3,7 @@ import { useNavigate } from "react-router";
 import ArrowLeft from "../../assets/icons/ArrowLeft.svg?react";
 import { FormError } from "../../components/common/FormError";
 import { FormField } from "../../components/common/FormField";
+import { PhotoCapture } from "../../components/common/PhotoCapture";
 import { APPLIANCE_CATEGORY_LABELS } from "../../data/appliances";
 import { fields, type ApplianceFormValues } from "./fields";
 import { useState } from "react";
@@ -10,6 +11,7 @@ import { useState } from "react";
 export function NewAppliance() {
   const navigate = useNavigate();
   const [errorLog, setErrorLog] = useState("");
+  const [isScanning, setIsScanning] = useState(false);
 
   const {
     register,
@@ -19,6 +21,20 @@ export function NewAppliance() {
     mode: "onBlur",
     defaultValues: { category: "" },
   });
+
+  const handleScan = async (file: File) => {
+    setIsScanning(true);
+    // 確認有收到照片，之後拿掉
+    try {
+      console.log("收到照片", {
+        name: file.name,
+        type: file.type,
+        sizeKB: Math.round(file.size / 1024),
+      });
+    } finally {
+      setIsScanning(false);
+    }
+  };
 
   const onSubmit: SubmitHandler<ApplianceFormValues> = async (values) => {
     setErrorLog("");
@@ -44,6 +60,7 @@ export function NewAppliance() {
       </div>
 
       <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-6">
+        <PhotoCapture onCapture={handleScan} isScanning={isScanning} />
         <div className="wk-card-outline flex flex-col gap-4 p-4.5">
           <div className="flex flex-col gap-1.5">
             <label
