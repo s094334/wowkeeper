@@ -34,7 +34,6 @@ export function NewAppliance() {
     try {
       const { brand, model, category } = await recogniseNameplate(file);
 
-      // 只填讀得到的，讀不到就別動使用者原本打的字。
       if (brand) setValue("brand", brand);
       if (model) setValue("model", model);
       if (category) setValue("category", category);
