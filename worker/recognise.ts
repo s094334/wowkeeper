@@ -1,23 +1,26 @@
 import { RECOGNISE_PROMPT } from "./prompt.js";
 
-// 評測結果：型號 3/3 全對、JSON 100% 可解析、中位 5.9s。
-// Mistral 型號也全對，但 JSON 只有 33% 解析得出來，對自動填表單是致命傷。
 const MODEL = "@cf/meta/llama-4-scout-17b-16e-instruct";
 
-// 前端會先壓到長邊 1568px（約 300KB），這只是防呆上限。
 const MAX_BYTES = 4 * 1024 * 1024;
+const CATEGORIES = new Set([
+  "aircon",
+  "waterPurifier",
+  "washer",
+  "fridge",
+  "dehumidifier",
+  "waterHeater",
+  "tv",
+  "other",
+]);
 
 export type RecogniseResult = {
   brand: string | null;
   model: string | null;
   productName: string | null;
+  category: string | null;
 };
 
-/**
- * 位元組轉 data URI。模型只吃 data URI，不接受 HTTP 網址。
- *
- * 分段是必要的：String.fromCharCode(...bytes) 一次攤開三十萬個參數會爆掉呼叫堆疊。
- */
 function toDataUri(bytes: Uint8Array, contentType: string): string {
   const CHUNK = 8192;
   let binary = "";
@@ -27,14 +30,11 @@ function toDataUri(bytes: Uint8Array, contentType: string): string {
   return `data:${contentType};base64,${btoa(binary)}`;
 }
 
-/** 模型很愛在 JSON 外面包 markdown 圍籬或補一句話，所以只取大括號中間那段。 */
 function parseJson(text: string): Record<string, unknown> | null {
   const start = text.indexOf("{");
   const end = text.lastIndexOf("}");
   if (start === -1 || end <= start) return null;
 
-  // 有些模型會照 markdown 的習慣轉義底線，吐出 "product\_name"。
-  // \_ 不是合法的 JSON escape，不清掉整包都解析不了。
   const cleaned = text.slice(start, end + 1).replace(/\\(?!["\\/bfnrtu])/g, "");
 
   try {
@@ -47,10 +47,9 @@ function parseJson(text: string): Record<string, unknown> | null {
   }
 }
 
-/** 模型可能回字串 "null"、空字串、或根本不是字串，一律收斂成 null。 */
 function text(value: unknown): string | null {
   if (typeof value !== "string") return null;
-  const trimmed = value.trim();
+  const trimmed = value.trim().replace(/^["']|["']$/g, "");
   return trimmed && trimmed.toLowerCase() !== "null" ? trimmed : null;
 }
 
@@ -89,12 +88,8 @@ export async function recognise(request: Request, env: Env): Promise<Response> {
       ],
       max_tokens: 1024,
     });
-    // 型別宣告說 response 是 string，但 binding 實測會回已解析好的物件
-    // （走外部 REST API 才是字串）。兩種都接。
     payload = "response" in output ? output.response : null;
   } catch (error) {
-    // 免費額度每天 10,000 neurons、00:00 UTC 重置。超過後重試不會好，
-    // 所以要跟一般失敗分開講，不然使用者會一直重拍。
     const message = error instanceof Error ? error.message : String(error);
     const outOfQuota = /3036|4006|account limited|capacity/i.test(message);
     console.error("AI 辨識失敗", message);
@@ -111,7 +106,6 @@ export async function recognise(request: Request, env: Env): Promise<Response> {
       : parseJson(typeof payload === "string" ? payload : "");
 
   if (!parsed) {
-    // 只記形狀不記內容 —— 看得出模型回了什麼結構，但銘牌上的文字不會留在 log。
     console.error(
       "AI 回應無法解析",
       typeof payload,
@@ -120,10 +114,13 @@ export async function recognise(request: Request, env: Env): Promise<Response> {
     return Response.json({ message: "看不清楚，請手動填寫" }, { status: 422 });
   }
 
+  const category = text(parsed.category);
+
   const result: RecogniseResult = {
     brand: text(parsed.brand),
     model: text(parsed.model),
     productName: text(parsed.product_name),
+    category: category && CATEGORIES.has(category) ? category : null,
   };
 
   return Response.json(result);

@@ -1,5 +1,6 @@
 import { useForm, type SubmitHandler } from "react-hook-form";
 import { useNavigate } from "react-router";
+import { recogniseNameplate } from "../../api/recognise";
 import ArrowLeft from "../../assets/icons/ArrowLeft.svg?react";
 import { FormError } from "../../components/common/FormError";
 import { FormField } from "../../components/common/FormField";
@@ -12,10 +13,13 @@ export function NewAppliance() {
   const navigate = useNavigate();
   const [errorLog, setErrorLog] = useState("");
   const [isScanning, setIsScanning] = useState(false);
+  const [scanResult, setScanResult] = useState("");
+  const [scanError, setScanError] = useState("");
 
   const {
     register,
     handleSubmit,
+    setValue,
     formState: { errors, isSubmitting },
   } = useForm<ApplianceFormValues>({
     mode: "onBlur",
@@ -24,13 +28,27 @@ export function NewAppliance() {
 
   const handleScan = async (file: File) => {
     setIsScanning(true);
-    // 確認有收到照片，之後拿掉
+    setScanError("");
+    setScanResult("");
+
     try {
-      console.log("收到照片", {
-        name: file.name,
-        type: file.type,
-        sizeKB: Math.round(file.size / 1024),
-      });
+      const { brand, model, category } = await recogniseNameplate(file);
+
+      // 只填讀得到的，讀不到就別動使用者原本打的字。
+      if (brand) setValue("brand", brand);
+      if (model) setValue("model", model);
+      if (category) setValue("category", category);
+
+      const summary = [brand, model].filter(Boolean).join("・");
+      if (summary) {
+        setScanResult(summary);
+      } else {
+        setScanError("看不清楚，請手動填寫");
+      }
+    } catch (error) {
+      setScanError(
+        error instanceof Error ? error.message : "辨識失敗，請稍後再試",
+      );
     } finally {
       setIsScanning(false);
     }
@@ -60,7 +78,12 @@ export function NewAppliance() {
       </div>
 
       <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-6">
-        <PhotoCapture onCapture={handleScan} isScanning={isScanning} />
+        <PhotoCapture
+          onCapture={handleScan}
+          isScanning={isScanning}
+          result={scanResult}
+          error={scanError}
+        />
         <div className="wk-card-outline flex flex-col gap-4 p-4.5">
           <div className="flex flex-col gap-1.5">
             <label
