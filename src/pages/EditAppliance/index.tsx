@@ -1,62 +1,43 @@
+import { useState } from "react";
 import { useForm, type SubmitHandler } from "react-hook-form";
-import { useNavigate } from "react-router";
-import { recogniseNameplate } from "../../api/recognise";
+import { useNavigate, useParams } from "react-router";
 import ArrowLeft from "../../assets/icons/ArrowLeft.svg?react";
 import { ApplianceFields } from "../../components/ApplianceFields";
 import type { ApplianceFormValues } from "../../components/ApplianceFields/fields";
 import { FormError } from "../../components/common/FormError";
-import { PhotoCapture } from "../../components/common/PhotoCapture";
-import { useState } from "react";
+import { ApplianceNotFound } from "../../components/ApplianceNotFound";
+import { findAppliance } from "../../api/appliances";
 
-export function NewAppliance() {
+export function EditAppliance() {
   const navigate = useNavigate();
+  const { id } = useParams();
+  const appliance = findAppliance(id);
   const [errorLog, setErrorLog] = useState("");
-  const [isScanning, setIsScanning] = useState(false);
-  const [scanResult, setScanResult] = useState("");
-  const [scanError, setScanError] = useState("");
 
   const {
     register,
     handleSubmit,
-    setValue,
     formState: { errors, isSubmitting },
   } = useForm<ApplianceFormValues>({
     mode: "onBlur",
-    defaultValues: { category: "" },
+    defaultValues: {
+      name: appliance?.name ?? "",
+      brand: appliance?.brand ?? "",
+      model: appliance?.model ?? "",
+      purchasedAt: appliance?.purchasedAt ?? "",
+      category: appliance?.category ?? "",
+    },
   });
 
-  const handleScan = async (file: File) => {
-    setIsScanning(true);
-    setScanError("");
-    setScanResult("");
-
-    try {
-      const { brand, model, category } = await recogniseNameplate(file);
-
-      if (brand) setValue("brand", brand);
-      if (model) setValue("model", model);
-      if (category) setValue("category", category);
-
-      const summary = [brand, model].filter(Boolean).join("・");
-      if (summary) {
-        setScanResult(summary);
-      } else {
-        setScanError("看不清楚，請手動填寫");
-      }
-    } catch (error) {
-      setScanError(
-        error instanceof Error ? error.message : "辨識失敗，請稍後再試",
-      );
-    } finally {
-      setIsScanning(false);
-    }
-  };
+  if (!appliance) {
+    return <ApplianceNotFound />;
+  }
 
   const onSubmit: SubmitHandler<ApplianceFormValues> = async (values) => {
     setErrorLog("");
     try {
       console.log(values);
-      navigate("/", { replace: true });
+      navigate(`/appliances/${appliance.id}`, { replace: true });
     } catch {
       setErrorLog("儲存失敗，請稍後再試");
     }
@@ -72,16 +53,10 @@ export function NewAppliance() {
         >
           <ArrowLeft width={20} height={20} />
         </button>
-        <h1 className="text-h1 font-semibold tracking-[-0.02em]">新增家電</h1>
+        <h1 className="text-h1 font-semibold tracking-[-0.02em]">編輯家電</h1>
       </div>
 
       <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-6">
-        <PhotoCapture
-          onCapture={handleScan}
-          isScanning={isScanning}
-          result={scanResult}
-          error={scanError}
-        />
         <ApplianceFields register={register} errors={errors} />
 
         {errorLog && <FormError>{errorLog}</FormError>}
@@ -91,7 +66,7 @@ export function NewAppliance() {
           disabled={isSubmitting}
           className="wk-cta w-full cursor-pointer disabled:opacity-60"
         >
-          完成建檔
+          儲存
         </button>
       </form>
     </main>
