@@ -1,8 +1,10 @@
 import { Link, useNavigate, useParams } from "react-router";
 import ArrowLeft from "../../assets/icons/ArrowLeft.svg?react";
 import Pencil from "../../assets/icons/Pencil.svg?react";
+import Plus from "../../assets/icons/Plus.svg?react";
 import Trash from "../../assets/icons/Trash.svg?react";
 import { ApplianceNotFound } from "../../components/ApplianceNotFound";
+import { PartCard } from "../../components/PartCard";
 import { findAppliance } from "../../api/appliances";
 import {
   APPLIANCE_CATEGORY_LABELS,
@@ -18,35 +20,19 @@ export function ApplianceDetail() {
     return <ApplianceNotFound />;
   }
 
-  const { name, category, brand, model, purchasedAt } = appliance;
+  const { name, category, brand, model, purchasedAt, parts = [] } = appliance;
   const Icon = APPLIANCE_ICONS[category];
 
   return (
     <main className="flex flex-1 flex-col sm:mx-auto sm:w-full sm:max-w-150">
       <div className="border-cream-400 flex flex-col gap-4 border-b px-5 pt-2 pb-4.5 sm:px-8">
-        <div className="flex items-center justify-between">
-          <button
-            type="button"
-            onClick={() => navigate(-1)}
-            className="text-ink hover:bg-cream-100 -ml-2 flex size-9 cursor-pointer items-center justify-center rounded-full"
-          >
-            <ArrowLeft width={20} height={20} />
-          </button>
-          <div className="flex items-center gap-3.5">
-            <Link
-              to={`/appliances/${appliance.id}/edit`}
-              className="text-ink hover:bg-cream-100 flex size-9 items-center justify-center rounded-full"
-            >
-              <Pencil width={18} height={18} />
-            </Link>
-            <button
-              type="button"
-              className="text-danger hover:bg-lamp-red-bg -mr-2 flex size-9 cursor-pointer items-center justify-center rounded-full"
-            >
-              <Trash width={18} height={18} />
-            </button>
-          </div>
-        </div>
+        <button
+          type="button"
+          onClick={() => navigate(-1)}
+          className="text-ink hover:bg-cream-100 -ml-2 flex size-9 shrink-0 cursor-pointer items-center justify-center rounded-full self-start"
+        >
+          <ArrowLeft width={20} height={20} />
+        </button>
 
         <div className="flex flex-col gap-2">
           <div className="text-ink-muted flex items-center gap-2 text-xs">
@@ -57,9 +43,25 @@ export function ApplianceDetail() {
             </span>
           </div>
 
-          <h1 className="text-[26px] leading-[1.25] font-semibold tracking-[-0.02em]">
-            {name}
-          </h1>
+          <div className="flex items-start justify-between gap-3">
+            <h1 className="min-w-0 flex-1 text-h1 leading-[1.25] font-semibold tracking-[-0.02em]">
+              {name}
+            </h1>
+            <div className="flex shrink-0 items-center gap-3.5">
+              <Link
+                to={`/appliances/${appliance.id}/edit`}
+                className="text-ink hover:bg-cream-100 flex size-9 items-center justify-center rounded-full"
+              >
+                <Pencil width={18} height={18} />
+              </Link>
+              <button
+                type="button"
+                className="text-danger hover:bg-lamp-red-bg -mr-2 flex size-9 cursor-pointer items-center justify-center rounded-full"
+              >
+                <Trash width={18} height={18} />
+              </button>
+            </div>
+          </div>
 
           {(model || purchasedAt) && (
             <div className="mt-0.5 flex items-center gap-2">
@@ -77,6 +79,27 @@ export function ApplianceDetail() {
           )}
         </div>
       </div>
+
+      <section className="flex flex-1 flex-col gap-3 px-5 py-4 sm:px-8">
+        <div className="flex items-baseline justify-between">
+          <h2 className="text-ink-muted text-sm font-medium">耗材更換</h2>
+          {parts.length > 0 && (
+            <span className="text-cream-800 text-sm">{parts.length} 項</span>
+          )}
+        </div>
+
+        {parts.map((part) => (
+          <PartCard key={part.id} part={part} />
+        ))}
+
+        <Link
+          to={`/appliances/${appliance.id}/parts/new`}
+          className="border-cream-500 text-ink-muted hover:bg-cream-100 hover:border-cream-800 hover:text-ink flex items-center justify-center gap-2 rounded-sm border border-dashed p-3 text-sm font-medium"
+        >
+          <Plus width={16} height={16} />
+          新增耗材
+        </Link>
+      </section>
     </main>
   );
 }
