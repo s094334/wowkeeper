@@ -1,10 +1,9 @@
 import { Link, useNavigate, useParams } from "react-router";
 import ArrowLeft from "../../assets/icons/ArrowLeft.svg?react";
 import Pencil from "../../assets/icons/Pencil.svg?react";
-import Plus from "../../assets/icons/Plus.svg?react";
 import Trash from "../../assets/icons/Trash.svg?react";
 import { ApplianceNotFound } from "../../components/ApplianceNotFound";
-import { PartCard } from "../../components/PartCard";
+import { PartList } from "../../components/PartList";
 import { findAppliance } from "../../api/appliances";
 import {
   APPLIANCE_CATEGORY_LABELS,
@@ -80,26 +79,7 @@ export function ApplianceDetail() {
         </div>
       </div>
 
-      <section className="flex flex-1 flex-col gap-3 px-5 py-4 sm:px-8">
-        <div className="flex items-baseline justify-between">
-          <h2 className="text-ink-muted text-sm font-medium">耗材更換</h2>
-          {parts.length > 0 && (
-            <span className="text-cream-800 text-sm">{parts.length} 項</span>
-          )}
-        </div>
-
-        {parts.map((part) => (
-          <PartCard key={part.id} part={part} />
-        ))}
-
-        <Link
-          to={`/appliances/${appliance.id}/parts/new`}
-          className="border-cream-500 text-ink-muted hover:bg-cream-100 hover:border-cream-800 hover:text-ink flex items-center justify-center gap-2 rounded-sm border border-dashed p-3 text-sm font-medium"
-        >
-          <Plus width={16} height={16} />
-          新增耗材
-        </Link>
-      </section>
+      <PartList applianceId={appliance.id} parts={parts} />
     </main>
   );
 }
