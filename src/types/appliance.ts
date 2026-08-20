@@ -17,4 +17,8 @@ export type Appliance = {
   category: ApplianceCategory;
   status: LampStatus;
   statusText: string;
+  brand?: string;
+  model?: string;
+  /** YYYY-MM-DD */
+  purchasedAt?: string;
 };

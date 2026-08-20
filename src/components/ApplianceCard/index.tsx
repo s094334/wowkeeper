@@ -1,3 +1,4 @@
+import { Link } from "react-router";
 import type { Appliance } from "../../types/appliance";
 import { APPLIANCE_ICONS } from "../../data/appliances";
 import { StatusLamp } from "../StatusLamp";
@@ -8,12 +9,12 @@ type ApplianceCardProps = {
 };
 
 export function ApplianceCard(props: ApplianceCardProps) {
-  const { name, category, status, statusText } = props.appliance;
+  const { id, name, category, status, statusText } = props.appliance;
   const Icon = APPLIANCE_ICONS[category];
 
   return (
-    <a
-      href="#"
+    <Link
+      to={`/appliances/${id}`}
       className="border-cream-400 hover:border-cream-600 bg-surface flex flex-col gap-2.5 rounded-sm border p-3.5"
     >
       <div className="flex items-start justify-between">
@@ -33,6 +34,6 @@ export function ApplianceCard(props: ApplianceCardProps) {
       >
         {statusText}
       </StatusLamp>
-    </a>
+    </Link>
   );
 }
