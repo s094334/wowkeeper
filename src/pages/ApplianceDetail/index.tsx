@@ -42,12 +42,12 @@ export function ApplianceDetail() {
             <ArrowLeft width={20} height={20} />
           </button>
           <div className="flex items-center gap-3.5">
-            <button
-              type="button"
-              className="text-ink hover:bg-cream-100 flex size-9 cursor-pointer items-center justify-center rounded-full"
+            <Link
+              to={`/appliances/${appliance.id}/edit`}
+              className="text-ink hover:bg-cream-100 flex size-9 items-center justify-center rounded-full"
             >
               <Pencil width={18} height={18} />
-            </button>
+            </Link>
             <button
               type="button"
               className="text-danger hover:bg-lamp-red-bg -mr-2 flex size-9 cursor-pointer items-center justify-center rounded-full"
