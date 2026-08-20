@@ -21,7 +21,7 @@ export function PartList(props: PartListProps) {
       </div>
 
       {parts.map((part) => (
-        <PartCard key={part.id} part={part} />
+        <PartCard key={part.id} applianceId={applianceId} part={part} />
       ))}
 
       <Link
