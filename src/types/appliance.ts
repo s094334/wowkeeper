@@ -11,6 +11,17 @@ export type ApplianceCategory =
   | "maintenance"
   | "other";
 
+export type PartAction = "replace" | "clean";
+
+export type Part = {
+  id: string;
+  name: string;
+  cycleMonths: number;
+  action: PartAction;
+  /** YYYY-MM-DD */
+  lastReplacedAt: string;
+};
+
 export type Appliance = {
   id: string;
   name: string;
@@ -21,4 +32,5 @@ export type Appliance = {
   model?: string;
   /** YYYY-MM-DD */
   purchasedAt?: string;
+  parts?: Part[];
 };

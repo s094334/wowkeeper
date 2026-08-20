@@ -58,7 +58,7 @@ export function Home() {
   if (appliances.length === 0) {
     return (
       <main className={PAGE}>
-        <h1 className="text-[26px] font-semibold tracking-[-0.02em] sm:text-h1">
+        <h1 className="text-h1 font-semibold tracking-[-0.02em] sm:text-h1">
           我的家電
         </h1>
         <EmptyState />
@@ -70,7 +70,7 @@ export function Home() {
     <main className={`${PAGE} gap-4`}>
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-center gap-2.5">
-          <h1 className="text-[26px] font-semibold tracking-[-0.02em] sm:text-h1">
+          <h1 className=" font-semibold tracking-[-0.02em] sm:text-h1">
             我的家電
           </h1>
           <StatusLamp

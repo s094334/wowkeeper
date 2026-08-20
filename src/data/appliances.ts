@@ -44,6 +44,22 @@ export const APPLIANCES: Appliance[] = [
     brand: "DAIKIN",
     model: "RXM41SVLT",
     purchasedAt: "2023-05-12",
+    parts: [
+      {
+        id: "prt_4b81c0a2e7",
+        name: "室內機濾網",
+        cycleMonths: 1,
+        action: "clean",
+        lastReplacedAt: "2026-07-17",
+      },
+      {
+        id: "prt_9d20f5ac13",
+        name: "室外機保養",
+        cycleMonths: 12,
+        action: "clean",
+        lastReplacedAt: "2025-12-03",
+      },
+    ],
   },
   {
     id: "apl_e3e59f387b",
@@ -54,6 +70,15 @@ export const APPLIANCES: Appliance[] = [
     brand: "3M",
     model: "UVA3000",
     purchasedAt: "2024-01-08",
+    parts: [
+      {
+        id: "prt_71ce3a8f60",
+        name: "活性碳濾芯",
+        cycleMonths: 6,
+        action: "replace",
+        lastReplacedAt: "2026-02-23",
+      },
+    ],
   },
   {
     id: "apl_f34a25fb4a",
@@ -64,6 +89,15 @@ export const APPLIANCES: Appliance[] = [
     brand: "Blueair",
     model: "3210",
     purchasedAt: "2024-06-20",
+    parts: [
+      {
+        id: "prt_2e5b17d904",
+        name: "HEPA 濾網",
+        cycleMonths: 6,
+        action: "replace",
+        lastReplacedAt: "2026-03-01",
+      },
+    ],
   },
   {
     id: "apl_4a0b092bd5",
