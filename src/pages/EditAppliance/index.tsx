@@ -6,12 +6,12 @@ import { ApplianceFields } from "../../components/ApplianceFields";
 import type { ApplianceFormValues } from "../../components/ApplianceFields/fields";
 import { FormError } from "../../components/common/FormError";
 import { ApplianceNotFound } from "../../components/ApplianceNotFound";
-import { APPLIANCES } from "../../data/appliances";
+import { findAppliance } from "../../api/appliances";
 
 export function EditAppliance() {
   const navigate = useNavigate();
   const { id } = useParams();
-  const appliance = APPLIANCES.find((item) => item.id === id);
+  const appliance = findAppliance(id);
   const [errorLog, setErrorLog] = useState("");
 
   const {

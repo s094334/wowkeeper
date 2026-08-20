@@ -1,18 +1,18 @@
 import { Link, useNavigate, useParams } from "react-router";
 import ArrowLeft from "../../assets/icons/ArrowLeft.svg?react";
-import { ApplianceNotFound } from "../../components/ApplianceNotFound";
 import Pencil from "../../assets/icons/Pencil.svg?react";
 import Trash from "../../assets/icons/Trash.svg?react";
+import { ApplianceNotFound } from "../../components/ApplianceNotFound";
+import { findAppliance } from "../../api/appliances";
 import {
   APPLIANCE_CATEGORY_LABELS,
   APPLIANCE_ICONS,
-  APPLIANCES,
 } from "../../data/appliances";
 
 export function ApplianceDetail() {
   const navigate = useNavigate();
   const { id } = useParams();
-  const appliance = APPLIANCES.find((item) => item.id === id);
+  const appliance = findAppliance(id);
 
   if (!appliance) {
     return <ApplianceNotFound />;
@@ -23,7 +23,7 @@ export function ApplianceDetail() {
 
   return (
     <main className="flex flex-1 flex-col sm:mx-auto sm:w-full sm:max-w-150">
-      <header className="border-cream-400 flex flex-col gap-4 border-b px-5 pt-2 pb-4.5 sm:px-8">
+      <div className="border-cream-400 flex flex-col gap-4 border-b px-5 pt-2 pb-4.5 sm:px-8">
         <div className="flex items-center justify-between">
           <button
             type="button"
@@ -76,7 +76,7 @@ export function ApplianceDetail() {
             </div>
           )}
         </div>
-      </header>
+      </div>
     </main>
   );
 }
