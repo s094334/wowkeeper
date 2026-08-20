@@ -1,8 +1,10 @@
 import { useForm, type SubmitHandler } from "react-hook-form";
 import { useNavigate } from "react-router";
+import { recogniseNameplate } from "../../api/recognise";
 import ArrowLeft from "../../assets/icons/ArrowLeft.svg?react";
 import { FormError } from "../../components/common/FormError";
 import { FormField } from "../../components/common/FormField";
+import { PhotoCapture } from "../../components/common/PhotoCapture";
 import { APPLIANCE_CATEGORY_LABELS } from "../../data/appliances";
 import { fields, type ApplianceFormValues } from "./fields";
 import { useState } from "react";
@@ -10,15 +12,46 @@ import { useState } from "react";
 export function NewAppliance() {
   const navigate = useNavigate();
   const [errorLog, setErrorLog] = useState("");
+  const [isScanning, setIsScanning] = useState(false);
+  const [scanResult, setScanResult] = useState("");
+  const [scanError, setScanError] = useState("");
 
   const {
     register,
     handleSubmit,
+    setValue,
     formState: { errors, isSubmitting },
   } = useForm<ApplianceFormValues>({
     mode: "onBlur",
     defaultValues: { category: "" },
   });
+
+  const handleScan = async (file: File) => {
+    setIsScanning(true);
+    setScanError("");
+    setScanResult("");
+
+    try {
+      const { brand, model, category } = await recogniseNameplate(file);
+
+      if (brand) setValue("brand", brand);
+      if (model) setValue("model", model);
+      if (category) setValue("category", category);
+
+      const summary = [brand, model].filter(Boolean).join("・");
+      if (summary) {
+        setScanResult(summary);
+      } else {
+        setScanError("看不清楚，請手動填寫");
+      }
+    } catch (error) {
+      setScanError(
+        error instanceof Error ? error.message : "辨識失敗，請稍後再試",
+      );
+    } finally {
+      setIsScanning(false);
+    }
+  };
 
   const onSubmit: SubmitHandler<ApplianceFormValues> = async (values) => {
     setErrorLog("");
@@ -44,6 +77,12 @@ export function NewAppliance() {
       </div>
 
       <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-6">
+        <PhotoCapture
+          onCapture={handleScan}
+          isScanning={isScanning}
+          result={scanResult}
+          error={scanError}
+        />
         <div className="wk-card-outline flex flex-col gap-4 p-4.5">
           <div className="flex flex-col gap-1.5">
             <label
