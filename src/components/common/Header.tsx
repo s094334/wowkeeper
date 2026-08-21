@@ -1,40 +1,114 @@
+import { useEffect, useState } from "react";
 import { Link } from "react-router";
+import FileText from "../../assets/icons/FileText.svg?react";
 import LogOut from "../../assets/icons/LogOut.svg?react";
+import Shield from "../../assets/icons/Shield.svg?react";
+import User from "../../assets/icons/User.svg?react";
 
 type HeaderProps = {
+  user?: { name: string; email: string };
   onLogout?: () => void;
 };
 
+const MENU_ITEM =
+  "hover:bg-cream-100 flex w-full cursor-pointer items-center gap-3 rounded-xs px-3 py-3.5 text-left text-body";
+
 export function Header(props: HeaderProps) {
-  const { onLogout } = props;
+  const { user = { name: "Chelsea", email: "s094334@gmail.com" }, onLogout } =
+    props;
+  const [open, setOpen] = useState(false);
+
+  useEffect(() => {
+    if (!open) return;
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setOpen(false);
+    };
+    document.addEventListener("keydown", handleKeyDown);
+
+    // 面板打開時鎖住背景捲動
+    const previous = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+      document.body.style.overflow = previous;
+    };
+  }, [open]);
+
+  const handleLogout = () => {
+    setOpen(false);
+    if (window.confirm("確定要登出嗎？")) onLogout?.();
+  };
 
   return (
-    <header className="border-cream-400 flex h-15 items-center gap-4 border-b px-5 sm:gap-8 sm:px-8">
-      <span className="text-terracotta text-base font-semibold tracking-[-0.01em] whitespace-nowrap">
-        哇管家 WowKeeper
-      </span>
-      <nav className="hidden gap-1 sm:flex">
+    <>
+      <header className="border-cream-400 flex h-15 items-center gap-4 border-b px-5 sm:gap-8 sm:px-8">
         <Link
           to="/"
-          className="bg-cream-100 text-ink rounded-xs px-3 py-[7px] text-sm font-medium whitespace-nowrap"
+          className="text-terracotta mt-px text-base font-semibold tracking-[-0.01em] whitespace-nowrap"
         >
-          家電總覽
+          哇管家 WowKeeper
         </Link>
-      </nav>
 
-      <span className="flex-1" />
+        <span className="flex-1" />
 
-      <div className="flex items-center gap-2.5">
-        <div className="bg-cream-300 size-[30px] shrink-0 rounded-full" />
         <button
           type="button"
-          onClick={onLogout}
-          className="border-cream-400 text-lamp-red-fg hover:bg-lamp-red-bg hover:border-lamp-red-fg rounded-xs flex cursor-pointer items-center gap-1.5 border px-2.5 py-1.5 text-xs font-medium whitespace-nowrap"
+          onClick={() => setOpen(true)}
+          className={`flex size-10 cursor-pointer items-center justify-center rounded-full border ${
+            open
+              ? "bg-cream-300 border-cream-600"
+              : "bg-cream-100 border-cream-400 hover:border-cream-600"
+          }`}
         >
-          <LogOut width={15} height={15} />
-          <span className="hidden sm:inline">登出</span>
+          <User width={19} height={19} className="text-ink-muted" />
         </button>
-      </div>
-    </header>
+      </header>
+
+      {open && (
+        <>
+          <div
+            onClick={() => setOpen(false)}
+            className="wk-scrim fixed inset-0 z-30 bg-black/25"
+          />
+
+          <div className="wk-sheet bg-surface fixed inset-x-0 bottom-0 z-40 rounded-t-lg pb-[env(safe-area-inset-bottom)] sm:mx-auto sm:max-w-110">
+            <span className="bg-cream-400 mx-auto mt-2.5 mb-1 block h-1 w-9 rounded-full" />
+
+            <div className="border-cream-300 flex flex-col gap-0.5 border-b px-5 pt-3 pb-4">
+              <span className="truncate text-base font-medium">
+                {user.name}
+              </span>
+              <span className="text-cream-800 truncate text-sm">
+                {user.email}
+              </span>
+            </div>
+
+            <div className="flex flex-col p-2">
+              <button type="button" className={MENU_ITEM}>
+                <FileText width={18} height={18} className="text-cream-800" />
+                使用說明
+              </button>
+              <button type="button" className={MENU_ITEM}>
+                <Shield width={18} height={18} className="text-cream-800" />
+                隱私權聲明
+              </button>
+            </div>
+
+            <div className="border-cream-300 border-t p-2 pb-3">
+              <button
+                type="button"
+                onClick={handleLogout}
+                className={`${MENU_ITEM} text-lamp-red-fg hover:bg-lamp-red-bg`}
+              >
+                <LogOut width={18} height={18} />
+                登出
+              </button>
+            </div>
+          </div>
+        </>
+      )}
+    </>
   );
 }
