@@ -37,7 +37,7 @@ export function PhotoCapture({
 
       <label
         htmlFor="photo"
-        className={`flex flex-col items-center gap-2 rounded-sm border border-dashed px-4 py-6 ${
+        className={`flex flex-col items-center gap-2 rounded-sm border border-dashed py-6 pt-6 pb-3 ${
           isScanning
             ? "border-cream-500 text-ink-muted cursor-wait"
             : error
