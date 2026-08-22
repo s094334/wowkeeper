@@ -34,6 +34,8 @@ CREATE TABLE IF NOT EXISTS parts (
 CREATE INDEX IF NOT EXISTS idx_parts_appliance_id ON parts (appliance_id);
 
 -- 登出黑名單：sign_out 時把當下 token 的 jti 存進來，authenticate() 會擋掉已撤銷的 token。
+-- expires_at 就是該 token 原本的到期時間（Unix 秒），sign_out 每次寫入新紀錄時
+-- 會順便刪掉這裡已經過期的舊紀錄（見 worker/users.ts 的 signOut），避免這張表無限長大。
 CREATE TABLE IF NOT EXISTS revoked_tokens (
   jti TEXT PRIMARY KEY,
   expires_at INTEGER NOT NULL
