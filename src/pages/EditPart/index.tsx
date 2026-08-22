@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useForm, type SubmitHandler } from "react-hook-form";
+import type { SubmitHandler } from "react-hook-form";
 import { useNavigate, useParams } from "react-router";
 import { findAppliance } from "../../api/appliances";
 import ArrowLeft from "../../assets/icons/ArrowLeft.svg?react";
@@ -8,6 +8,7 @@ import { ApplianceNotFound } from "../../components/ApplianceNotFound";
 import { FormError } from "../../components/common/FormError";
 import { PartFields } from "../../components/PartFields";
 import type { PartFormValues } from "../../components/PartFields/fields";
+import { usePartForm } from "../../components/PartFields/usePartForm";
 
 export function EditPart() {
   const navigate = useNavigate();
@@ -20,14 +21,11 @@ export function EditPart() {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
-  } = useForm<PartFormValues>({
-    mode: "onBlur",
-    defaultValues: {
-      name: part?.name ?? "",
-      cycleMonths: String(part?.cycleMonths ?? ""),
-      action: part?.action ?? "replace",
-      lastReplacedAt: part?.lastReplacedAt ?? "",
-    },
+  } = usePartForm({
+    name: part?.name ?? "",
+    cycleMonths: String(part?.cycleMonths ?? ""),
+    action: part?.action ?? "replace",
+    lastReplacedAt: part?.lastReplacedAt ?? "",
   });
 
   if (!appliance || !part) {
@@ -74,7 +72,7 @@ export function EditPart() {
         </button>
         <div className="min-w-0">
           <h1 className="text-h1 font-semibold tracking-[-0.02em]">編輯耗材</h1>
-          <p className="text-ink-muted truncate text-xs">{appliance.name}</p>
+          <p className="text-ink-muted truncate text-h3">{appliance.name}</p>
         </div>
       </div>
 

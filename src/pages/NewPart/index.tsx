@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useForm, type SubmitHandler } from "react-hook-form";
+import type { SubmitHandler } from "react-hook-form";
 import { useNavigate, useParams } from "react-router";
 import { findAppliance } from "../../api/appliances";
 import ArrowLeft from "../../assets/icons/ArrowLeft.svg?react";
@@ -7,6 +7,7 @@ import { ApplianceNotFound } from "../../components/ApplianceNotFound";
 import { FormError } from "../../components/common/FormError";
 import { PartFields } from "../../components/PartFields";
 import type { PartFormValues } from "../../components/PartFields/fields";
+import { usePartForm } from "../../components/PartFields/usePartForm";
 
 export function NewPart() {
   const navigate = useNavigate();
@@ -18,10 +19,7 @@ export function NewPart() {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
-  } = useForm<PartFormValues>({
-    mode: "onBlur",
-    defaultValues: { action: "replace" },
-  });
+  } = usePartForm();
 
   if (!appliance) {
     return <ApplianceNotFound />;
