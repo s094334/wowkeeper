@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router";
-import FileText from "../../assets/icons/FileText.svg?react";
 import LogOut from "../../assets/icons/LogOut.svg?react";
 import Shield from "../../assets/icons/Shield.svg?react";
+import { PrivacyDialog } from "../PrivacyNotice";
 import User from "../../assets/icons/User.svg?react";
 
 type HeaderProps = {
@@ -17,6 +17,7 @@ export function Header(props: HeaderProps) {
   const { user = { name: "Chelsea", email: "s094334@gmail.com" }, onLogout } =
     props;
   const [open, setOpen] = useState(false);
+  const [privacyOpen, setPrivacyOpen] = useState(false);
 
   useEffect(() => {
     if (!open) return;
@@ -86,11 +87,14 @@ export function Header(props: HeaderProps) {
             </div>
 
             <div className="flex flex-col p-2">
-              <button type="button" className={MENU_ITEM}>
-                <FileText width={18} height={18} className="text-cream-800" />
-                使用說明
-              </button>
-              <button type="button" className={MENU_ITEM}>
+              <button
+                type="button"
+                onClick={() => {
+                  setOpen(false);
+                  setPrivacyOpen(true);
+                }}
+                className={MENU_ITEM}
+              >
                 <Shield width={18} height={18} className="text-cream-800" />
                 隱私權聲明
               </button>
@@ -109,6 +113,8 @@ export function Header(props: HeaderProps) {
           </div>
         </>
       )}
+
+      <PrivacyDialog open={privacyOpen} onClose={() => setPrivacyOpen(false)} />
     </>
   );
 }

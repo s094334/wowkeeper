@@ -13,6 +13,7 @@ import type { ApplianceFormValues } from "../../components/ApplianceFields/field
 import { FormError } from "../../components/common/FormError";
 import { PhotoCapture } from "../../components/common/PhotoCapture";
 import { PartFields } from "../../components/PartFields";
+import { PrivacyNotice } from "../../components/PrivacyNotice";
 import type { PartFormValues } from "../../components/PartFields/fields";
 import { StepIndicator } from "../../components/StepIndicator";
 
@@ -127,7 +128,9 @@ export function NewAppliance() {
             />
             <div className="text-cream-800 flex items-start gap-2 px-1 pb-1 text-xs leading-relaxed">
               <AlertCircle width={14} height={14} className="mt-0.5 shrink-0" />
-              <span>照片不會儲存，辨識完就會刪除，也不會將照片公開。</span>
+              <span>
+                照片僅用於辨識銘牌文字。 <PrivacyNotice />
+              </span>
             </div>
           </div>
         )}
