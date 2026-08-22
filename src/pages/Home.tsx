@@ -25,6 +25,7 @@ const BADGE =
   "inline-flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-2xs font-semibold";
 
 const BADGE_ON: Record<string, string> = {
+  all: "bg-cream-300 text-ink",
   overdue: "bg-lamp-red-bg text-lamp-red-fg",
   soon: "bg-lamp-amber-bg text-lamp-amber-fg",
 };
@@ -53,6 +54,7 @@ export function Home() {
 
   const appliances = APPLIANCES;
   const counts = {
+    all: appliances.length,
     overdue: appliances.filter((item) => item.status === "overdue").length,
     soon: appliances.filter((item) => item.status === "soon").length,
   };
@@ -80,17 +82,15 @@ export function Home() {
               }`}
             >
               {tab.label}
-              {tab.key !== "all" && (
-                <span
-                  className={`${BADGE} ${
-                    filter === tab.key
-                      ? BADGE_ON[tab.key]
-                      : "bg-cream-300 text-ink-muted"
-                  }`}
-                >
-                  {counts[tab.key]}
-                </span>
-              )}
+              <span
+                className={`${BADGE} ${
+                  filter === tab.key
+                    ? BADGE_ON[tab.key]
+                    : "bg-cream-300 text-ink-muted"
+                }`}
+              >
+                {counts[tab.key]}
+              </span>
             </button>
           ))}
         </div>
@@ -110,13 +110,13 @@ export function Home() {
         )}
       </div>
 
-      <div className="border-cream-400 shrink-0 border-t px-5 pt-3 pb-5 sm:px-8">
+      <div className="border-cream-400 bg-cream-200 sticky bottom-0 shrink-0 border-t px-5 pt-3 pb-[max(1.25rem,env(safe-area-inset-bottom))] sm:px-8">
         <Link
           to={NEW_APPLIANCE_PATH}
-          className="bg-ink text-cream-50 hover:bg-terracotta flex h-12 items-center justify-center gap-2 rounded-sm text-body font-medium"
+          className="bg-surface text-ink border-cream-400 hover:bg-terracotta hover:border-terracotta flex h-12 items-center justify-center gap-2 rounded-sm border text-body font-medium hover:text-white"
         >
           <Plus width={18} height={18} />
-          新增
+          新增家電
         </Link>
       </div>
     </main>

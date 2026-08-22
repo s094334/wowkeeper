@@ -4,6 +4,7 @@ import { useNavigate } from "react-router";
 import { recogniseNameplate } from "../../api/recognise";
 import AlertCircle from "../../assets/icons/AlertCircle.svg?react";
 import ArrowLeft from "../../assets/icons/ArrowLeft.svg?react";
+import ArrowRight from "../../assets/icons/ArrowRight.svg?react";
 import Camera from "../../assets/icons/Camera.svg?react";
 import Plus from "../../assets/icons/Plus.svg?react";
 import X from "../../assets/icons/X.svg?react";
@@ -20,7 +21,7 @@ const STEPS = ["拍照", "家電資料", "耗材設定"];
 const GHOST_BUTTON =
   "border-cream-400 bg-surface hover:bg-cream-100 flex h-10 flex-1 cursor-pointer items-center justify-center gap-2 rounded-xs border text-sm font-medium";
 const PRIMARY_BUTTON =
-  "bg-terracotta hover:bg-terracotta-hover flex h-10 flex-1 cursor-pointer items-center justify-center rounded-xs text-sm font-medium text-white whitespace-nowrap";
+  "bg-terracotta hover:bg-terracotta-hover flex h-10 flex-1 cursor-pointer items-center justify-center gap-2 rounded-xs text-sm font-medium text-white whitespace-nowrap";
 
 export function NewAppliance() {
   const navigate = useNavigate();
@@ -251,6 +252,7 @@ export function NewAppliance() {
                 className={PRIMARY_BUTTON}
               >
                 新增耗材
+                <ArrowRight width={15} height={15} />
               </button>
             </>
           )}
