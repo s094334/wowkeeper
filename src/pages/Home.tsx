@@ -1,99 +1,123 @@
+import { useState } from "react";
 import { Link } from "react-router";
-import type { Appliance, LampStatus } from "../types/appliance";
+import type { LampStatus } from "../types/appliance";
 import { ApplianceCard } from "../components/ApplianceCard";
-import { StatusLamp } from "../components/StatusLamp";
 import { APPLIANCES } from "../data/appliances";
 import Plus from "../assets/icons/Plus.svg?react";
 
 const NEW_APPLIANCE_PATH = "/appliances/new";
 
-function summarise(appliances: Appliance[]) {
-  const overdue = appliances.filter((a) => a.status === "overdue").length;
-  const pending = appliances.filter((a) => a.status !== "ok").length;
+const FILTERS = [
+  { key: "all", label: "全部" },
+  { key: "overdue", label: "逾期" },
+  { key: "soon", label: "快到期" },
+] as const;
 
-  let status: LampStatus = "ok";
-  if (overdue > 0) {
-    status = "overdue";
-  } else if (pending > 0) {
-    status = "soon";
-  }
+type FilterKey = (typeof FILTERS)[number]["key"];
 
-  const text = pending > 0 ? `${pending} 件待換` : "全部正常";
+const TAB_BASE =
+  "-mb-0.5 cursor-pointer rounded-t-sm border-2 px-4 pt-2 pb-[9px] text-sm";
+const TAB_ON =
+  "bg-cream-200 border-cream-500 border-b-cream-200 text-ink font-semibold";
+const TAB_OFF = "border-transparent text-ink-muted font-medium hover:text-ink";
 
-  return { status, text };
-}
+const BADGE =
+  "inline-flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-2xs font-semibold";
+
+const BADGE_ON: Record<string, string> = {
+  overdue: "bg-lamp-red-bg text-lamp-red-fg",
+  soon: "bg-lamp-amber-bg text-lamp-amber-fg",
+};
 
 function EmptyState() {
   return (
     <div className="flex flex-1 flex-col items-center justify-center gap-6 pb-10 text-center">
-      <button
-        type="button"
-        className="border-cream-500 text-cream-700 hover:bg-cream-100 hover:border-cream-800 hover:text-ink flex size-18 cursor-pointer items-center justify-center rounded-lg border border-dashed"
+      <Link
+        to={NEW_APPLIANCE_PATH}
+        className="border-cream-500 text-cream-700 hover:bg-cream-100 hover:border-cream-800 hover:text-ink flex size-18 items-center justify-center rounded-lg border border-dashed"
       >
         <Plus width={26} height={26} />
-      </button>
+      </Link>
       <div className="flex max-w-65 flex-col gap-2">
         <p className="text-h3 font-semibold tracking-[-0.02em]">先建第一台</p>
         <p className="text-ink-muted text-sm leading-relaxed text-pretty">
-          建立您的第一個家電，開始追蹤濾網
+          登記名稱、型號與購買日期，之後濾網該換，我會提醒你。
         </p>
       </div>
-      <Link
-        to={NEW_APPLIANCE_PATH}
-        className="wk-cta flex w-full max-w-70 items-center justify-center"
-      >
-        新增家電
-      </Link>
     </div>
   );
 }
 
-const PAGE = "flex flex-1 flex-col px-5 py-8 sm:px-8";
-const SHOW_EMPTY_STATE = false;
-
 export function Home() {
-  const appliances: Appliance[] = SHOW_EMPTY_STATE ? [] : APPLIANCES;
-  const summary = summarise(appliances);
+  const [filter, setFilter] = useState<FilterKey>("all");
 
-  if (appliances.length === 0) {
-    return (
-      <main className={PAGE}>
-        <h1 className="text-h1 font-semibold tracking-[-0.02em]">我的家電</h1>
-        <EmptyState />
-      </main>
-    );
-  }
+  const appliances = APPLIANCES;
+  const counts = {
+    overdue: appliances.filter((item) => item.status === "overdue").length,
+    soon: appliances.filter((item) => item.status === "soon").length,
+  };
+
+  const visible =
+    filter === "all"
+      ? appliances
+      : appliances.filter((item) => item.status === (filter as LampStatus));
 
   return (
-    <main className={`${PAGE} gap-4`}>
-      <div className="flex items-start justify-between gap-3">
-        <div className="flex items-center gap-2.5">
-          <h1 className=" font-semibold tracking-[-0.02em] text-h1">
-            我的家電
-          </h1>
-          <StatusLamp
-            status={summary.status}
-            className="px-2.5 py-[5px] text-xs"
-          >
-            {summary.text}
-          </StatusLamp>
-        </div>
+    <main className="flex min-h-0 flex-1 flex-col sm:mx-auto sm:w-full sm:max-w-150">
+      <div className="flex flex-col gap-3.5 px-5 pt-6 sm:px-8">
+        <h1 className="text-[26px] font-semibold tracking-[-0.02em] sm:text-h1">
+          我的家電
+        </h1>
 
-        <Link
-          to={NEW_APPLIANCE_PATH}
-          className="border-cream-400 hover:bg-cream-100 flex size-10 shrink-0 items-center justify-center rounded-full border sm:size-auto sm:gap-1.5 sm:rounded-xs sm:px-3 sm:py-2"
-        >
-          <Plus width={18} height={18} />
-          <span className="hidden text-xs font-medium whitespace-nowrap sm:inline">
-            新增家電
-          </span>
-        </Link>
+        <div className="border-cream-500 flex gap-1 border-b-2">
+          {FILTERS.map((tab) => (
+            <button
+              key={tab.key}
+              type="button"
+              onClick={() => setFilter(tab.key)}
+              className={`${TAB_BASE} flex items-center gap-1.5 ${
+                filter === tab.key ? TAB_ON : TAB_OFF
+              }`}
+            >
+              {tab.label}
+              {tab.key !== "all" && (
+                <span
+                  className={`${BADGE} ${
+                    filter === tab.key
+                      ? BADGE_ON[tab.key]
+                      : "bg-cream-300 text-ink-muted"
+                  }`}
+                >
+                  {counts[tab.key]}
+                </span>
+              )}
+            </button>
+          ))}
+        </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 lg:grid-cols-4">
-        {appliances.map((appliance) => (
-          <ApplianceCard key={appliance.id} appliance={appliance} />
-        ))}
+      <div className="min-h-0 flex-1 overflow-y-auto px-5 pt-4 pb-4 sm:px-8">
+        {appliances.length === 0 ? (
+          <EmptyState />
+        ) : visible.length === 0 ? (
+          <p className="text-ink-muted pt-2 text-xs">這個狀態目前沒有家電。</p>
+        ) : (
+          <div className="grid grid-cols-2 content-start gap-2.5 sm:grid-cols-3 lg:grid-cols-4">
+            {visible.map((appliance) => (
+              <ApplianceCard key={appliance.id} appliance={appliance} />
+            ))}
+          </div>
+        )}
+      </div>
+
+      <div className="border-cream-400 shrink-0 border-t px-5 pt-3 pb-5 sm:px-8">
+        <Link
+          to={NEW_APPLIANCE_PATH}
+          className="bg-ink text-cream-50 hover:bg-terracotta flex h-12 items-center justify-center gap-2 rounded-sm text-body font-medium"
+        >
+          <Plus width={18} height={18} />
+          新增
+        </Link>
       </div>
     </main>
   );

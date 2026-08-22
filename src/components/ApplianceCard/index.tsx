@@ -9,7 +9,7 @@ type ApplianceCardProps = {
 };
 
 export function ApplianceCard(props: ApplianceCardProps) {
-  const { id, name, category, status, statusText } = props.appliance;
+  const { id, name, model, category, status, statusText } = props.appliance;
   const Icon = APPLIANCE_ICONS[category];
 
   return (
@@ -24,14 +24,18 @@ export function ApplianceCard(props: ApplianceCardProps) {
         <span className={`wk-dot ${DOT_CLASS[status]}`} />
       </div>
 
-      <div className="text-sm leading-[1.35] font-medium tracking-[-0.01em]">
-        {name}
+      <div className="flex flex-col gap-[3px]">
+        <span className="truncate text-sm leading-[1.35] font-medium tracking-[-0.01em]">
+          {name}
+        </span>
+        {model && (
+          <span className="text-cream-800 truncate text-2xs tracking-[-0.01em]">
+            {model}
+          </span>
+        )}
       </div>
 
-      <StatusLamp
-        status={status}
-        className={status === "ok" ? "invisible self-start" : "self-start"}
-      >
+      <StatusLamp status={status} className="self-start">
         {statusText}
       </StatusLamp>
     </Link>
