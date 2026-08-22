@@ -51,7 +51,6 @@ export function NewAppliance() {
       const summary = [brand, model].filter(Boolean).join("・");
       if (summary) {
         setScanResult(summary);
-        // 讀到東西就直接進下一步 —— 填好的欄位本身就是最好的回饋
         setStep(2);
       } else {
         setScanError("看不清楚，請手動填寫");
@@ -83,7 +82,7 @@ export function NewAppliance() {
 
   return (
     <main className="flex flex-1 flex-col sm:mx-auto sm:w-full sm:max-w-150">
-      <div className="flex items-center justify-between px-5 pt-2 pb-1 sm:px-8">
+      <div className="flex items-center justify-between px-5 pt-6 pb-1 sm:px-8">
         <span className="text-h1 font-medium">
           {step === 3 ? "新增耗材" : "新增家電"}
         </span>

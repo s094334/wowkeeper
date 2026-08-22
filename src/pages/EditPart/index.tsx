@@ -70,10 +70,17 @@ export function EditPart() {
         >
           <ArrowLeft width={20} height={20} />
         </button>
-        <div className="min-w-0">
+        <div className="min-w-0 flex-1">
           <h1 className="text-h1 font-semibold tracking-[-0.02em]">編輯耗材</h1>
           <p className="text-ink-muted truncate text-h3">{appliance.name}</p>
         </div>
+        <button
+          type="button"
+          onClick={handleDelete}
+          className="text-danger hover:bg-lamp-red-bg -mr-1.5 flex size-9 shrink-0 cursor-pointer items-center justify-center rounded-full"
+        >
+          <Trash width={18} height={18} />
+        </button>
       </div>
 
       <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-6">
@@ -89,17 +96,6 @@ export function EditPart() {
           儲存
         </button>
       </form>
-
-      <div className="border-cream-400 border-t pt-6">
-        <button
-          type="button"
-          onClick={handleDelete}
-          className="text-danger hover:bg-lamp-red-bg flex w-full cursor-pointer items-center justify-center gap-2 rounded-xs py-2.5 text-sm font-medium"
-        >
-          <Trash width={16} height={16} />
-          刪除這個耗材
-        </button>
-      </div>
     </main>
   );
 }

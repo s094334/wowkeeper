@@ -1,6 +1,15 @@
 import Camera from "../../assets/icons/Camera.svg?react";
 import Check from "../../assets/icons/Check.svg?react";
+import ImageIcon from "../../assets/icons/Image.svg?react";
 import RefreshCw from "../../assets/icons/RefreshCw.svg?react";
+
+const ACTION_BASE =
+  "flex h-10 flex-1 items-center justify-center gap-2 rounded-xs text-sm font-medium";
+const ACTION_BUSY = "bg-cream-300 text-cream-700 cursor-wait";
+const ACTION_GHOST =
+  "border-cream-400 hover:bg-cream-100 cursor-pointer border";
+const ACTION_PRIMARY =
+  "bg-terracotta hover:bg-terracotta-hover cursor-pointer text-white";
 
 type PhotoCaptureProps = {
   onCapture: (file: File) => void;
@@ -22,10 +31,18 @@ export function PhotoCapture(props: PhotoCaptureProps) {
   return (
     <>
       <input
-        id="photo"
+        id="photo-camera"
         type="file"
         accept="image/*"
         capture="environment"
+        onChange={handlePick}
+        disabled={isScanning}
+        className="hidden"
+      />
+      <input
+        id="photo-library"
+        type="file"
+        accept="image/*"
         onChange={handlePick}
         disabled={isScanning}
         className="hidden"
@@ -64,19 +81,24 @@ export function PhotoCapture(props: PhotoCaptureProps) {
           </p>
         )}
 
-        <label
-          htmlFor="photo"
-          className={`flex h-10 w-full max-w-55 items-center justify-center gap-2 rounded-xs text-sm font-medium ${
-            isScanning
-              ? "bg-cream-300 text-cream-700 cursor-wait"
-              : settled
-                ? "border-cream-400 hover:bg-cream-100 cursor-pointer border"
-                : "bg-terracotta hover:bg-terracotta-hover cursor-pointer text-white"
-          }`}
-        >
-          {!isScanning && settled && <Camera width={15} height={15} />}
-          {isScanning ? "辨識中…" : settled ? "重新拍照" : "拍照"}
-        </label>
+        <div className="flex w-full max-w-70 gap-2.5">
+          <label
+            htmlFor="photo-camera"
+            className={`${ACTION_BASE} ${
+              isScanning ? ACTION_BUSY : settled ? ACTION_GHOST : ACTION_PRIMARY
+            }`}
+          >
+            {!isScanning && <Camera width={15} height={15} />}
+            {isScanning ? "辨識中…" : settled ? "重新拍照" : "拍照"}
+          </label>
+          <label
+            htmlFor="photo-library"
+            className={`${ACTION_BASE} ${isScanning ? ACTION_BUSY : ACTION_GHOST}`}
+          >
+            {!isScanning && <ImageIcon width={15} height={15} />}
+            從相簿選
+          </label>
+        </div>
       </div>
     </>
   );

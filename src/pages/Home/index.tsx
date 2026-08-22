@@ -27,7 +27,7 @@ export function Home() {
   return (
     <main className="flex min-h-0 flex-1 flex-col sm:mx-auto sm:w-full sm:max-w-150">
       <div className="flex flex-col gap-3.5 px-5 pt-6 sm:px-8">
-        <h1 className="text-[26px] font-semibold tracking-[-0.02em] sm:text-h1">
+        <h1 className="text-h1 font-semibold tracking-[-0.02em] sm:text-h1">
           我的家電
         </h1>
 
