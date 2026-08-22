@@ -34,9 +34,9 @@ export function Home() {
         <FilterTabs value={filter} counts={counts} onChange={setFilter} />
       </div>
 
-      <div className="min-h-0 flex-1 overflow-y-auto px-5 pt-4 pb-4 sm:px-8">
+      <div className="flex min-h-0 flex-1 flex-col overflow-y-auto px-5 pt-4 pb-4 sm:px-8">
         {appliances.length === 0 ? (
-          <EmptyState to={NEW_APPLIANCE_PATH} />
+          <EmptyState />
         ) : visible.length === 0 ? (
           <p className="text-ink-muted pt-2 text-xs">這個狀態目前沒有家電。</p>
         ) : (
