@@ -9,6 +9,15 @@
   "ai": {
     "binding": "AI"
   },
+  // 用 `wrangler d1 create wowkeeper-db` 建立後，把回傳的 database_id 貼到下面，
+  // 再用 `wrangler d1 execute wowkeeper-db --file=./worker/schema.sql`（本機加 --local）建表。
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "wowkeeper-db",
+      "database_id": "REPLACE_WITH_D1_DATABASE_ID"
+    }
+  ],
   "observability": {
     "enabled": true
   },
