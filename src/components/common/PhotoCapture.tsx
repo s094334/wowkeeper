@@ -1,6 +1,15 @@
 import Camera from "../../assets/icons/Camera.svg?react";
 import Check from "../../assets/icons/Check.svg?react";
+import ImageIcon from "../../assets/icons/Image.svg?react";
 import RefreshCw from "../../assets/icons/RefreshCw.svg?react";
+
+const ACTION_BASE =
+  "flex h-10 flex-1 items-center justify-center gap-2 rounded-xs text-sm font-medium";
+const ACTION_BUSY = "bg-cream-300 text-cream-700 cursor-wait";
+const ACTION_GHOST =
+  "border-cream-400 hover:bg-cream-100 cursor-pointer border";
+const ACTION_PRIMARY =
+  "bg-terracotta hover:bg-terracotta-hover cursor-pointer text-white";
 
 type PhotoCaptureProps = {
   onCapture: (file: File) => void;
@@ -9,12 +18,10 @@ type PhotoCaptureProps = {
   error?: string;
 };
 
-export function PhotoCapture({
-  onCapture,
-  isScanning = false,
-  result,
-  error,
-}: PhotoCaptureProps) {
+export function PhotoCapture(props: PhotoCaptureProps) {
+  const { onCapture, isScanning = false, result, error } = props;
+  const settled = Boolean(result || error);
+
   const handlePick = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     event.target.value = "";
@@ -22,11 +29,9 @@ export function PhotoCapture({
   };
 
   return (
-    <div className="flex flex-col gap-1.5">
-      <span className="text-ink-muted text-xs font-medium">銘牌照片</span>
-
+    <>
       <input
-        id="photo"
+        id="photo-camera"
         type="file"
         accept="image/*"
         capture="environment"
@@ -34,48 +39,67 @@ export function PhotoCapture({
         disabled={isScanning}
         className="hidden"
       />
+      <input
+        id="photo-library"
+        type="file"
+        accept="image/*"
+        onChange={handlePick}
+        disabled={isScanning}
+        className="hidden"
+      />
 
-      <label
-        htmlFor="photo"
-        className={`flex flex-col items-center gap-2 rounded-sm border border-dashed px-4 py-6 ${
-          isScanning
-            ? "border-cream-500 text-ink-muted cursor-wait"
-            : error
-              ? "border-danger hover:bg-cream-100 cursor-pointer"
-              : "border-cream-500 hover:bg-cream-100 hover:border-cream-800 cursor-pointer"
+      <div
+        className={`flex flex-1 flex-col items-center justify-center gap-4 rounded-sm border border-dashed px-5 py-6 text-center ${
+          error ? "border-danger" : "border-cream-500"
         }`}
       >
+        <span className="border-cream-500 text-cream-700 flex size-18 items-center justify-center rounded-lg border border-dashed">
+          {isScanning ? (
+            <RefreshCw width={26} height={26} className="animate-spin" />
+          ) : result ? (
+            <Check width={26} height={26} className="text-lamp-green-fg" />
+          ) : (
+            <Camera width={26} height={26} />
+          )}
+        </span>
         {isScanning ? (
-          <>
-            <RefreshCw
-              width={22}
-              height={22}
-              className="text-cream-800 animate-spin"
-            />
-            <span className="text-sm font-medium">辨識中…</span>
-          </>
+          <p className="text-ink-muted text-sm leading-relaxed">
+            辨識中，請稍等一下下
+          </p>
         ) : result ? (
-          <>
-            <Check width={22} height={22} className="text-lamp-green-fg" />
-            <span className="text-sm font-medium">{result}</span>
-            <span className="text-ink-muted text-2xs">
-              不對的話可以直接改，或重拍一次
-            </span>
-          </>
+          <div className="flex flex-col gap-1">
+            <p className="text-body font-medium">{result}</p>
+            <p className="text-ink-muted text-xs">下一步可以修改讀錯的地方</p>
+          </div>
+        ) : error ? (
+          <p className="text-danger max-w-80 text-sm leading-relaxed text-pretty">
+            {error}
+          </p>
         ) : (
-          <>
-            <Camera width={22} height={22} className="text-cream-800" />
-            <span className="text-sm font-medium">
-              {error ? "重新拍照" : "拍照自動辨識"}
-            </span>
-            <span
-              className={`text-2xs ${error ? "text-danger" : "text-ink-muted"}`}
-            >
-              {error ?? "對準銘牌，自動填入品牌與型號"}
-            </span>
-          </>
+          <p className="text-ink-muted max-w-80 text-sm leading-relaxed text-pretty">
+            拍下銘牌上的型號，或從相簿選一張既有的照片，類型、品牌與型號會自動帶入下一步。
+          </p>
         )}
-      </label>
-    </div>
+
+        <div className="flex w-full max-w-70 gap-2.5">
+          <label
+            htmlFor="photo-camera"
+            className={`${ACTION_BASE} ${
+              isScanning ? ACTION_BUSY : settled ? ACTION_GHOST : ACTION_PRIMARY
+            }`}
+          >
+            {!isScanning && <Camera width={15} height={15} />}
+            {isScanning ? "辨識中…" : settled ? "重新拍照" : "拍照"}
+          </label>
+          <label
+            htmlFor="photo-library"
+            className={`${ACTION_BASE} ${isScanning ? ACTION_BUSY : ACTION_GHOST}`}
+          >
+            {!isScanning && <ImageIcon width={15} height={15} />}
+            從相簿選
+          </label>
+        </div>
+      </div>
+    </>
   );
 }

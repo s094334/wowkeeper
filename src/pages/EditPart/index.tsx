@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useForm, type SubmitHandler } from "react-hook-form";
+import type { SubmitHandler } from "react-hook-form";
 import { useNavigate, useParams } from "react-router";
 import { findAppliance } from "../../api/appliances";
 import ArrowLeft from "../../assets/icons/ArrowLeft.svg?react";
@@ -8,6 +8,7 @@ import { ApplianceNotFound } from "../../components/ApplianceNotFound";
 import { FormError } from "../../components/common/FormError";
 import { PartFields } from "../../components/PartFields";
 import type { PartFormValues } from "../../components/PartFields/fields";
+import { usePartForm } from "../../components/PartFields/usePartForm";
 
 export function EditPart() {
   const navigate = useNavigate();
@@ -20,14 +21,11 @@ export function EditPart() {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
-  } = useForm<PartFormValues>({
-    mode: "onBlur",
-    defaultValues: {
-      name: part?.name ?? "",
-      cycleMonths: String(part?.cycleMonths ?? ""),
-      action: part?.action ?? "replace",
-      lastReplacedAt: part?.lastReplacedAt ?? "",
-    },
+  } = usePartForm({
+    name: part?.name ?? "",
+    cycleMonths: String(part?.cycleMonths ?? ""),
+    action: part?.action ?? "replace",
+    lastReplacedAt: part?.lastReplacedAt ?? "",
   });
 
   if (!appliance || !part) {
@@ -72,10 +70,17 @@ export function EditPart() {
         >
           <ArrowLeft width={20} height={20} />
         </button>
-        <div className="min-w-0">
+        <div className="min-w-0 flex-1">
           <h1 className="text-h1 font-semibold tracking-[-0.02em]">編輯耗材</h1>
-          <p className="text-ink-muted truncate text-xs">{appliance.name}</p>
+          <p className="text-ink-muted truncate text-h3">{appliance.name}</p>
         </div>
+        <button
+          type="button"
+          onClick={handleDelete}
+          className="text-danger hover:bg-lamp-red-bg -mr-1.5 flex size-9 shrink-0 cursor-pointer items-center justify-center rounded-full"
+        >
+          <Trash width={18} height={18} />
+        </button>
       </div>
 
       <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-6">
@@ -91,17 +96,6 @@ export function EditPart() {
           儲存
         </button>
       </form>
-
-      <div className="border-cream-400 border-t pt-6">
-        <button
-          type="button"
-          onClick={handleDelete}
-          className="text-danger hover:bg-lamp-red-bg flex w-full cursor-pointer items-center justify-center gap-2 rounded-xs py-2.5 text-sm font-medium"
-        >
-          <Trash width={16} height={16} />
-          刪除這個耗材
-        </button>
-      </div>
     </main>
   );
 }

@@ -152,3 +152,31 @@
     box-shadow: 0 0 0 3px var(--color-lamp-green-ring);
   }
 }
+
+/* ---- 底部升起的面板 ---- */
+@keyframes wk-rise {
+  from {
+    transform: translateY(100%);
+  }
+}
+@keyframes wk-fade {
+  from {
+    opacity: 0;
+  }
+}
+
+@layer components {
+  .wk-sheet {
+    animation: wk-rise 0.22s cubic-bezier(0.32, 0.72, 0, 1);
+  }
+  .wk-scrim {
+    animation: wk-fade 0.22s ease-out;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wk-sheet,
+  .wk-scrim {
+    animation: none;
+  }
+}
