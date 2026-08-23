@@ -9,6 +9,20 @@
   "ai": {
     "binding": "AI"
   },
+  // D1 binding 先註解掉：database_id 還沒填真的值，留著會讓 Cloudflare 部署失敗（找不到資料庫）。
+  // 要恢復時：
+  //   1. npx wrangler login
+  //   2. npx wrangler d1 create wowkeeper-db，把回傳的 database_id 貼進下面
+  //   3. 取消註解整個 d1_databases 區塊
+  //   4. npm run cf-typegen（重新產生 worker-configuration.d.ts 裡的 D1Database 型別）
+  //   5. npx wrangler d1 execute wowkeeper-db --remote --file=./worker/schema.sql 建表
+  // "d1_databases": [
+  //   {
+  //     "binding": "DB",
+  //     "database_name": "wowkeeper-db",
+  //     "database_id": "REPLACE_WITH_D1_DATABASE_ID"
+  //   }
+  // ],
   "observability": {
     "enabled": true
   },
