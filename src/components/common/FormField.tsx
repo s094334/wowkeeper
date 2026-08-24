@@ -6,7 +6,6 @@ import type {
 } from "react-hook-form";
 import type { FieldConfig } from "../../types/form";
 
-/** One config entry, plus the two things only the page can hand over. */
 type FormFieldProps<T extends FieldValues> = FieldConfig<T> & {
   register: UseFormRegister<T>;
   errors: FieldErrors<T>;

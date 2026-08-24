@@ -40,18 +40,12 @@ export function dueDateOf(part: PartLike): string {
   return new Date(dueDayNumber(part)).toISOString().slice(0, 10);
 }
 
-/**
- * 由剩餘天數決定燈號。到期當天（0）算 soon 不算 overdue——當天換掉還來得及。
- */
 export function statusOf(daysLeft: number): LampStatus {
   if (daysLeft < 0) return "overdue";
   if (daysLeft <= SOON_WITHIN_DAYS) return "soon";
   return "ok";
 }
 
-/**
- * 取所有耗材中最急迫的一筆決定整台家電的狀態
- */
 export function computeApplianceStatus(
   parts: readonly PartLike[],
   today: Date = new Date(),
