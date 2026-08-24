@@ -1,14 +1,11 @@
 import { useState } from "react";
-import { Link } from "react-router";
 import type { LampStatus } from "../../types/appliance";
 import { ApplianceCard } from "../../components/ApplianceCard";
 import { EmptyState } from "../../components/EmptyState";
+import { NewApplianceButton } from "../../components/NewApplianceButton";
 import { withStatus } from "../../lib/applianceStatus";
 import { APPLIANCES } from "../../data/appliances";
-import Plus from "../../assets/icons/Plus.svg?react";
 import { FilterTabs, type FilterKey } from "./FilterTabs";
-
-const NEW_APPLIANCE_PATH = "/appliances/new";
 
 export function Home() {
   const [filter, setFilter] = useState<FilterKey>("all");
@@ -28,9 +25,13 @@ export function Home() {
   return (
     <main className="flex min-h-0 flex-1 flex-col">
       <div className="flex flex-col gap-3.5 pt-6 px-8">
-        <h1 className="text-h1 font-semibold tracking-[-0.02em] sm:text-h1">
-          我的家電
-        </h1>
+        <div className="flex items-center justify-between gap-4">
+          <h1 className="text-h1 font-semibold tracking-[-0.02em] sm:text-h1">
+            我的家電
+          </h1>
+
+          <NewApplianceButton className="hidden h-10 shrink-0 px-4 text-sm md:inline-flex" />
+        </div>
 
         <FilterTabs value={filter} counts={counts} onChange={setFilter} />
       </div>
@@ -54,14 +55,8 @@ export function Home() {
         )}
       </div>
 
-      <div className="border-cream-400 bg-cream-200 sticky bottom-0 shrink-0 border-t px-5 pt-3 pb-[max(1.25rem,env(safe-area-inset-bottom))] sm:px-8">
-        <Link
-          to={NEW_APPLIANCE_PATH}
-          className="bg-surface text-ink border-cream-400 hover:bg-terracotta hover:border-terracotta flex h-12 items-center justify-center gap-2 rounded-sm border text-body font-medium hover:text-white"
-        >
-          <Plus width={18} height={18} />
-          新增家電
-        </Link>
+      <div className="border-cream-400 bg-cream-200 sticky bottom-0 shrink-0 border-t px-5 pt-3 pb-[max(1.25rem,env(safe-area-inset-bottom))] sm:px-8 md:hidden">
+        <NewApplianceButton className="text-body flex h-12 justify-center" />
       </div>
     </main>
   );
