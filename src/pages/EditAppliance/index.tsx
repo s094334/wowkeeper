@@ -1,26 +1,35 @@
-import { useState } from "react";
 import { useForm, type SubmitHandler } from "react-hook-form";
 import { useNavigate, useParams } from "react-router";
 import ArrowLeft from "../../assets/icons/ArrowLeft.svg?react";
 import { ApplianceFields } from "../../components/ApplianceFields";
-import type { ApplianceFormValues } from "../../components/ApplianceFields/fields";
+import {
+  toApplianceInput,
+  type ApplianceFormValues,
+} from "../../components/ApplianceFields/fields";
 import { FormError } from "../../components/common/FormError";
 import { ApplianceNotFound } from "../../components/ApplianceNotFound";
-import { findAppliance } from "../../api/appliances";
+import { useAppliance, useApplianceMutations } from "../../hooks/useAppliances";
+
+const PAGE =
+  "flex flex-1 flex-col gap-6 px-5 py-8 sm:mx-auto sm:w-full sm:max-w-150 sm:px-8";
 
 export function EditAppliance() {
   const navigate = useNavigate();
   const { id } = useParams();
-  const appliance = findAppliance(id);
-  const [errorLog, setErrorLog] = useState("");
+  const { appliance, isLoading, isNotFound, errorLog } = useAppliance(id);
+  const {
+    editAppliance,
+    isEditing,
+    errorLog: mutationErrors,
+  } = useApplianceMutations();
 
   const {
     register,
     handleSubmit,
-    formState: { errors, isSubmitting },
+    formState: { errors },
   } = useForm<ApplianceFormValues>({
     mode: "onBlur",
-    defaultValues: {
+    values: {
       name: appliance?.name ?? "",
       brand: appliance?.brand ?? "",
       model: appliance?.model ?? "",
@@ -29,22 +38,38 @@ export function EditAppliance() {
     },
   });
 
-  if (!appliance) {
+  if (isLoading) {
+    return (
+      <main className={PAGE}>
+        <p className="text-ink-muted text-xs">載入中…</p>
+      </main>
+    );
+  }
+
+  if (isNotFound) {
     return <ApplianceNotFound />;
   }
 
-  const onSubmit: SubmitHandler<ApplianceFormValues> = async (values) => {
-    setErrorLog("");
-    try {
-      console.log(values);
-      navigate(`/appliances/${appliance.id}`, { replace: true });
-    } catch {
-      setErrorLog("儲存失敗，請稍後再試");
-    }
+  if (!appliance) {
+    return (
+      <main className={PAGE}>
+        <FormError>{errorLog[0] ?? "發生錯誤，請稍後再試"}</FormError>
+      </main>
+    );
+  }
+
+  const onSubmit: SubmitHandler<ApplianceFormValues> = (values) => {
+    editAppliance(
+      { id: appliance.id, input: toApplianceInput(values) },
+      {
+        onSuccess: () =>
+          navigate(`/appliances/${appliance.id}`, { replace: true }),
+      },
+    );
   };
 
   return (
-    <main className="flex flex-1 flex-col gap-6 px-5 py-8 sm:mx-auto sm:w-full sm:max-w-150 sm:px-8">
+    <main className={PAGE}>
       <div className="flex items-center gap-2">
         <button
           type="button"
@@ -59,14 +84,16 @@ export function EditAppliance() {
       <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-6">
         <ApplianceFields register={register} errors={errors} />
 
-        {errorLog && <FormError>{errorLog}</FormError>}
+        {mutationErrors.map((message, index) => (
+          <FormError key={index}>{message}</FormError>
+        ))}
 
         <button
           type="submit"
-          disabled={isSubmitting}
+          disabled={isEditing}
           className="wk-cta w-full cursor-pointer disabled:opacity-60"
         >
-          儲存
+          {isEditing ? "儲存中…" : "儲存"}
         </button>
       </form>
     </main>
