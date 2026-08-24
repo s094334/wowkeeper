@@ -3,6 +3,7 @@ import { Link } from "react-router";
 import type { LampStatus } from "../../types/appliance";
 import { ApplianceCard } from "../../components/ApplianceCard";
 import { EmptyState } from "../../components/EmptyState";
+import { withStatus } from "../../lib/applianceStatus";
 import { APPLIANCES } from "../../data/appliances";
 import Plus from "../../assets/icons/Plus.svg?react";
 import { FilterTabs, type FilterKey } from "./FilterTabs";
@@ -12,7 +13,7 @@ const NEW_APPLIANCE_PATH = "/appliances/new";
 export function Home() {
   const [filter, setFilter] = useState<FilterKey>("all");
 
-  const appliances = APPLIANCES;
+  const appliances = withStatus(APPLIANCES);
   const counts = {
     all: appliances.length,
     overdue: appliances.filter((item) => item.status === "overdue").length,
@@ -41,8 +42,13 @@ export function Home() {
           <p className="text-ink-muted pt-2 text-xs">這個狀態目前沒有家電。</p>
         ) : (
           <div className="grid grid-cols-2 content-start gap-2.5 sm:grid-cols-3 lg:grid-cols-4">
-            {visible.map((appliance) => (
-              <ApplianceCard key={appliance.id} appliance={appliance} />
+            {visible.map((item) => (
+              <ApplianceCard
+                key={item.appliance.id}
+                appliance={item.appliance}
+                status={item.status}
+                statusText={item.statusText}
+              />
             ))}
           </div>
         )}

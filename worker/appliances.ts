@@ -1,6 +1,5 @@
 import { generateId } from "./lib/id.js";
 import { ok, fail } from "./lib/response.js";
-import { computeApplianceStatus } from "./lib/status.js";
 import type { ApplianceRow, PartRow } from "./lib/types.js";
 
 const CATEGORIES = new Set([
@@ -53,27 +52,23 @@ function serializePart(row: PartRow) {
   };
 }
 
-function serializeAppliance(row: ApplianceRow, parts: PartRow[] | null) {
-  const { status, statusText } = computeApplianceStatus(
-    (parts ?? []).map((part) => ({
-      name: part.name,
-      cycleMonths: part.cycle_months,
-      lastReplacedAt: part.last_replaced_at,
-    })),
-  );
-
-  const base = {
+/**
+ * DB 資料列轉成前端要的形狀：欄位改 camelCase、NULL 改成 undefined（JSON 會直接省略該 key）、
+ * 不外流 user_id 與 created_at/updated_at。
+ *
+ * 狀態（逾期 / 快到期）不在這裡算——那要看「今天」是哪一天，而只有瀏覽器知道使用者的時區，
+ * 所以一律回原始的 parts，由前端用 src/lib/status.ts 現算。
+ */
+function serializeAppliance(row: ApplianceRow, parts: PartRow[]) {
+  return {
     id: row.id,
     name: row.name,
     category: row.category,
-    status,
-    statusText,
     brand: row.brand ?? undefined,
     model: row.model ?? undefined,
     purchasedAt: row.purchased_at ?? undefined,
+    parts: parts.map(serializePart),
   };
-
-  return parts ? { ...base, parts: parts.map(serializePart) } : base;
 }
 
 /** 驗證新增/更新家電的欄位，通過回傳 null，失敗回傳要顯示的錯誤訊息。 */
@@ -94,13 +89,36 @@ function validateApplianceInput(
 }
 
 export async function listAppliances(env: Env, uid: string): Promise<Response> {
-  const { results } = await env.DB.prepare(
-    "SELECT * FROM appliances WHERE user_id = ? ORDER BY created_at DESC",
-  )
-    .bind(uid)
-    .all<ApplianceRow>();
+  // 兩支查詢同時發，耗材用 JOIN 一次撈完整個使用者的，避免每台家電各查一次（N+1），
+  // 也不必把家電 id 一個個綁進 IN (...)。
+  const [appliances, parts] = await Promise.all([
+    env.DB.prepare(
+      "SELECT * FROM appliances WHERE user_id = ? ORDER BY created_at DESC",
+    )
+      .bind(uid)
+      .all<ApplianceRow>(),
+    env.DB.prepare(
+      `SELECT parts.* FROM parts
+       JOIN appliances ON appliances.id = parts.appliance_id
+       WHERE appliances.user_id = ?
+       ORDER BY parts.created_at ASC`,
+    )
+      .bind(uid)
+      .all<PartRow>(),
+  ]);
 
-  return ok({ data: results.map((row) => serializeAppliance(row, null)) });
+  const partsByAppliance = new Map<string, PartRow[]>();
+  for (const part of parts.results) {
+    const existing = partsByAppliance.get(part.appliance_id);
+    if (existing) existing.push(part);
+    else partsByAppliance.set(part.appliance_id, [part]);
+  }
+
+  return ok({
+    data: appliances.results.map((row) =>
+      serializeAppliance(row, partsByAppliance.get(row.id) ?? []),
+    ),
+  });
 }
 
 export async function getAppliance(

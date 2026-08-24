@@ -4,6 +4,14 @@ import type { PartRow } from "./lib/types.js";
 
 const ACTIONS = new Set(["replace", "clean"]);
 
+// 預設 UTC+8
+const TAIPEI_UTC_OFFSET_MS = 8 * 60 * 60 * 1000;
+
+/** 台北當地的今天，YYYY-MM-DD。 */
+function taipeiToday(): string {
+  return new Date(Date.now() + TAIPEI_UTC_OFFSET_MS).toISOString().slice(0, 10);
+}
+
 function isNonEmptyString(value: unknown): value is string {
   return typeof value === "string" && value.trim().length > 0;
 }
@@ -184,7 +192,7 @@ export async function renewPart(
   const part = await findOwnedPart(env, uid, applianceId, partId);
   if (!part) return fail("找不到該耗材", 404);
 
-  const today = new Date().toISOString().slice(0, 10);
+  const today = taipeiToday();
 
   await env.DB.prepare(
     "UPDATE parts SET last_replaced_at = ?, updated_at = ? WHERE id = ?",
