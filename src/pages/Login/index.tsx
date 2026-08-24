@@ -4,6 +4,8 @@ import { Link, useLocation, useNavigate } from "react-router";
 import { AuthLayout } from "../../components/common/AuthLayout";
 import { FormError } from "../../components/common/FormError";
 import { FormField } from "../../components/common/FormField";
+import { getErrorMessage, signIn } from "../../api/system";
+import { saveAuth } from "../../lib/authStorage";
 import { fields, subTitle, type LoginFormValues } from "./fields";
 
 export function Login() {
@@ -23,11 +25,11 @@ export function Login() {
   const onSubmit: SubmitHandler<LoginFormValues> = async (values) => {
     setErrorLog("");
     try {
-      // TODO: await signIn(values) once POST /api/users/sign_in exists.
-      console.log(values);
+      const { token, nickname, email } = await signIn(values);
+      saveAuth(token, { name: nickname, email });
       navigate("/", { replace: true });
-    } catch {
-      setErrorLog("發生錯誤，請稍後再試");
+    } catch (error) {
+      setErrorLog(getErrorMessage(error));
     }
   };
 
