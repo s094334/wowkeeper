@@ -1,4 +1,4 @@
-import type { ApplianceCategory } from "../../types/appliance";
+import type { ApplianceCategory, ApplianceInput } from "../../types/appliance";
 import type { FieldConfig } from "../../types/form";
 
 export type ApplianceFormValues = {
@@ -8,6 +8,16 @@ export type ApplianceFormValues = {
   purchasedAt: string;
   category: ApplianceCategory | "";
 };
+
+export function toApplianceInput(values: ApplianceFormValues): ApplianceInput {
+  return {
+    name: values.name.trim(),
+    category: values.category as ApplianceCategory,
+    brand: values.brand.trim() || undefined,
+    model: values.model.trim() || undefined,
+    purchasedAt: values.purchasedAt || undefined,
+  };
+}
 
 function today(): string {
   const now = new Date();

@@ -1,16 +1,16 @@
 import { useState } from "react";
 import type { LampStatus } from "../../types/appliance";
-import { ApplianceCard } from "../../components/ApplianceCard";
-import { EmptyState } from "../../components/EmptyState";
 import { NewApplianceButton } from "../../components/NewApplianceButton";
+import { useAppliances } from "../../hooks/useAppliances";
 import { withStatus } from "../../lib/applianceStatus";
-import { APPLIANCES } from "../../data/appliances";
+import { ApplianceList } from "./ApplianceList";
 import { FilterTabs, type FilterKey } from "./FilterTabs";
 
 export function Home() {
   const [filter, setFilter] = useState<FilterKey>("all");
+  const { appliances: fetched, isLoading, errorLog } = useAppliances();
 
-  const appliances = withStatus(APPLIANCES);
+  const appliances = withStatus(fetched);
   const counts = {
     all: appliances.length,
     overdue: appliances.filter((item) => item.status === "overdue").length,
@@ -37,22 +37,12 @@ export function Home() {
       </div>
 
       <div className="flex min-h-0 flex-1 flex-col overflow-y-auto pt-4 pb-4 px-8">
-        {appliances.length === 0 ? (
-          <EmptyState />
-        ) : visible.length === 0 ? (
-          <p className="text-ink-muted pt-2 text-xs">這個狀態目前沒有家電。</p>
-        ) : (
-          <div className="grid grid-cols-2 content-start gap-2.5 md:grid-cols-3 lg:grid-cols-4">
-            {visible.map((item) => (
-              <ApplianceCard
-                key={item.appliance.id}
-                appliance={item.appliance}
-                status={item.status}
-                statusText={item.statusText}
-              />
-            ))}
-          </div>
-        )}
+        <ApplianceList
+          items={visible}
+          totalCount={appliances.length}
+          isLoading={isLoading}
+          errorLog={errorLog}
+        />
       </div>
 
       <div className="border-cream-400 bg-cream-200 sticky bottom-0 shrink-0 border-t px-5 pt-3 pb-[max(1.25rem,env(safe-area-inset-bottom))] sm:px-8 md:hidden">
