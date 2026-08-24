@@ -32,3 +32,32 @@ export type Appliance = {
   purchasedAt?: string;
   parts: Part[];
 };
+
+export type ApplianceInput = {
+  name: string;
+  category: ApplianceCategory;
+  brand?: string;
+  model?: string;
+  /** YYYY-MM-DD */
+  purchasedAt?: string;
+};
+
+export type ListAppliancesResponse = {
+  status: boolean;
+  data: Appliance[];
+};
+
+export type GetApplianceResponse = {
+  status: boolean;
+  data: Appliance;
+};
+
+export type CreateApplianceResponse = {
+  status: boolean;
+  newAppliance: Appliance;
+};
+
+export type ApplianceMessageResponse = {
+  status: boolean;
+  message: string;
+};
