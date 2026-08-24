@@ -3,27 +3,48 @@ import ArrowLeft from "../../assets/icons/ArrowLeft.svg?react";
 import Pencil from "../../assets/icons/Pencil.svg?react";
 import Trash from "../../assets/icons/Trash.svg?react";
 import { ApplianceNotFound } from "../../components/ApplianceNotFound";
+import { FormError } from "../../components/common/FormError";
 import { PartList } from "../../components/PartList";
-import { findAppliance } from "../../api/appliances";
+import { useAppliance } from "../../hooks/useAppliances";
 import {
   APPLIANCE_CATEGORY_LABELS,
   APPLIANCE_ICONS,
 } from "../../data/appliances";
 
+const PAGE = "flex flex-1 flex-col sm:mx-auto sm:w-full sm:max-w-150";
+
 export function ApplianceDetail() {
   const navigate = useNavigate();
   const { id } = useParams();
-  const appliance = findAppliance(id);
+  const { appliance, isLoading, isNotFound, errorLog } = useAppliance(id);
+
+  if (isLoading) {
+    return (
+      <main className={PAGE}>
+        <p className="text-ink-muted px-5 pt-6 text-xs sm:px-8">載入中…</p>
+      </main>
+    );
+  }
+
+  if (isNotFound) {
+    return <ApplianceNotFound />;
+  }
 
   if (!appliance) {
-    return <ApplianceNotFound />;
+    return (
+      <main className={PAGE}>
+        <div className="px-5 pt-6 sm:px-8">
+          <FormError>{errorLog[0] ?? "發生錯誤，請稍後再試"}</FormError>
+        </div>
+      </main>
+    );
   }
 
   const { name, category, brand, model, purchasedAt, parts } = appliance;
   const Icon = APPLIANCE_ICONS[category];
 
   return (
-    <main className="flex flex-1 flex-col sm:mx-auto sm:w-full sm:max-w-150">
+    <main className={PAGE}>
       <div className="border-cream-400 flex flex-col gap-4 border-b px-5 pt-2 pb-4.5 sm:px-8">
         <button
           type="button"
