@@ -91,7 +91,10 @@ export async function signIn(request: Request, env: Env): Promise<Response> {
     TOKEN_TTL_SECONDS,
   );
 
-  return Response.json({ status: true, exp, token }, { status: 200 });
+  return Response.json(
+    { status: true, exp, token, nickname: user.nickname, email: user.email },
+    { status: 200 },
+  );
 }
 
 export async function signOut(request: Request, env: Env): Promise<Response> {
