@@ -165,12 +165,25 @@
   }
 }
 
+/* md 以上會員面板改成右上角下拉，從上方微微落下而不是從螢幕底部升起 */
+@keyframes wk-drop {
+  from {
+    transform: translateY(-6px);
+  }
+}
+
 @layer components {
   .wk-sheet {
     animation: wk-rise 0.22s cubic-bezier(0.32, 0.72, 0, 1);
   }
   .wk-scrim {
     animation: wk-fade 0.22s ease-out;
+  }
+
+  @media (min-width: 768px) {
+    .wk-sheet {
+      animation: wk-drop 0.14s ease-out;
+    }
   }
 }
 
