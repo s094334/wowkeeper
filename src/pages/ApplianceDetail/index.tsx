@@ -19,7 +19,7 @@ export function ApplianceDetail() {
     return <ApplianceNotFound />;
   }
 
-  const { name, category, brand, model, purchasedAt, parts = [] } = appliance;
+  const { name, category, brand, model, purchasedAt, parts } = appliance;
   const Icon = APPLIANCE_ICONS[category];
 
   return (

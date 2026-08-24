@@ -1,15 +1,18 @@
 import { Link } from "react-router";
-import type { Appliance } from "../../types/appliance";
+import type { Appliance, LampStatus } from "../../types/appliance";
 import { APPLIANCE_ICONS } from "../../data/appliances";
 import { StatusLamp } from "../StatusLamp";
 import { DOT_CLASS } from "./classes";
 
 type ApplianceCardProps = {
   appliance: Appliance;
+  status: LampStatus;
+  statusText: string;
 };
 
 export function ApplianceCard(props: ApplianceCardProps) {
-  const { id, name, model, category, status, statusText } = props.appliance;
+  const { status, statusText } = props;
+  const { id, name, model, category } = props.appliance;
   const Icon = APPLIANCE_ICONS[category];
 
   return (
