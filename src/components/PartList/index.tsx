@@ -1,6 +1,7 @@
 import { Link } from "react-router";
 import type { Part } from "../../types/appliance";
 import Plus from "../../assets/icons/Plus.svg?react";
+import { withPartStatus } from "../../lib/applianceStatus";
 import { PartCard } from "../PartCard";
 
 type PartListProps = {
@@ -10,6 +11,8 @@ type PartListProps = {
 
 export function PartList(props: PartListProps) {
   const { applianceId, parts } = props;
+  // 整批共用同一個「今天」，同一頁的耗材才不會因為跨過午夜而各自算出不同的基準日。
+  const items = withPartStatus(parts);
 
   return (
     <section className="flex flex-1 flex-col gap-3 px-5 py-4 sm:px-8">
@@ -20,8 +23,14 @@ export function PartList(props: PartListProps) {
         )}
       </div>
 
-      {parts.map((part) => (
-        <PartCard key={part.id} applianceId={applianceId} part={part} />
+      {items.map((item) => (
+        <PartCard
+          key={item.part.id}
+          applianceId={applianceId}
+          part={item.part}
+          status={item.status}
+          statusText={item.statusText}
+        />
       ))}
 
       <Link
