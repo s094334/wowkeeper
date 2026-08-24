@@ -4,6 +4,7 @@ import { Link, useNavigate } from "react-router";
 import { AuthLayout } from "../../components/common/AuthLayout";
 import { FormError } from "../../components/common/FormError";
 import { FormField } from "../../components/common/FormField";
+import { getErrorMessage, signUp } from "../../api/system";
 import { fields, subTitle, type RegisterFormValues } from "./fields";
 
 export function Register() {
@@ -19,12 +20,14 @@ export function Register() {
   const onSubmit: SubmitHandler<RegisterFormValues> = async (values) => {
     setErrorLog("");
     try {
-      // TODO: await signUp({ email, password, nickname: values.name })
-      // once POST /api/users/sign_up exists.
-      console.log(values);
+      await signUp({
+        email: values.email,
+        password: values.password,
+        nickname: values.name,
+      });
       navigate("/login", { replace: true, state: { justRegistered: true } });
-    } catch {
-      setErrorLog("發生錯誤，請稍後再試");
+    } catch (error) {
+      setErrorLog(getErrorMessage(error));
     }
   };
 
