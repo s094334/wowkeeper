@@ -26,8 +26,8 @@ export function Home() {
       : appliances.filter((item) => item.status === (filter as LampStatus));
 
   return (
-    <main className="flex min-h-0 flex-1 flex-col sm:mx-auto sm:w-full sm:max-w-150">
-      <div className="flex flex-col gap-3.5 px-5 pt-6 sm:px-8">
+    <main className="flex min-h-0 flex-1 flex-col">
+      <div className="flex flex-col gap-3.5 pt-6 px-8">
         <h1 className="text-h1 font-semibold tracking-[-0.02em] sm:text-h1">
           我的家電
         </h1>
@@ -35,13 +35,13 @@ export function Home() {
         <FilterTabs value={filter} counts={counts} onChange={setFilter} />
       </div>
 
-      <div className="flex min-h-0 flex-1 flex-col overflow-y-auto px-5 pt-4 pb-4 sm:px-8">
+      <div className="flex min-h-0 flex-1 flex-col overflow-y-auto pt-4 pb-4 px-8">
         {appliances.length === 0 ? (
           <EmptyState />
         ) : visible.length === 0 ? (
           <p className="text-ink-muted pt-2 text-xs">這個狀態目前沒有家電。</p>
         ) : (
-          <div className="grid grid-cols-2 content-start gap-2.5 sm:grid-cols-3 lg:grid-cols-4">
+          <div className="grid grid-cols-2 content-start gap-2.5 md:grid-cols-3 lg:grid-cols-4">
             {visible.map((item) => (
               <ApplianceCard
                 key={item.appliance.id}

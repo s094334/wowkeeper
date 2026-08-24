@@ -44,7 +44,7 @@ export function Header(props: HeaderProps) {
 
   return (
     <>
-      <header className="border-cream-400 flex h-15 items-center gap-4 border-b px-5 sm:gap-8 sm:px-8 mt-1">
+      <header className="border-cream-400 flex h-15 items-center gap-4 border-b sm:gap-8 px-8 mt-1">
         <Link
           to="/"
           className="text-terracotta mt-px text-base font-semibold tracking-[-0.01em] whitespace-nowrap"
