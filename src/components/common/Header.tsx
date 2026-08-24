@@ -4,9 +4,10 @@ import LogOut from "../../assets/icons/LogOut.svg?react";
 import Shield from "../../assets/icons/Shield.svg?react";
 import { PrivacyDialog } from "../PrivacyNotice";
 import User from "../../assets/icons/User.svg?react";
+import type { StoredUser } from "../../lib/authStorage";
 
 type HeaderProps = {
-  user?: { name: string; email: string };
+  user: StoredUser;
   onLogout?: () => void;
 };
 
@@ -14,8 +15,7 @@ const MENU_ITEM =
   "hover:bg-cream-100 flex w-full cursor-pointer items-center gap-3 rounded-xs px-3 py-3.5 text-left text-body";
 
 export function Header(props: HeaderProps) {
-  const { user = { name: "Chelsea", email: "s094334@gmail.com" }, onLogout } =
-    props;
+  const { user, onLogout } = props;
   const [open, setOpen] = useState(false);
   const [privacyOpen, setPrivacyOpen] = useState(false);
 
