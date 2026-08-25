@@ -1,4 +1,4 @@
-import type { PartAction } from "../../types/appliance";
+import type { PartAction, PartInput } from "../../types/appliance";
 import type { FieldConfig } from "../../types/form";
 
 export type PartFormValues = {
@@ -7,6 +7,22 @@ export type PartFormValues = {
   action: PartAction | "";
   lastReplacedAt: string;
 };
+
+/**
+ * 表單值轉成要送給後端的 body。
+ *
+ * cycleMonths 一定要轉成數字：<input type="number"> 拿到的還是字串，而 worker 的
+ * validatePartInput 用 typeof 檢查，收到 "6" 會直接判定驗證失敗。
+ */
+export function toPartInput(values: PartFormValues): PartInput {
+  return {
+    name: values.name.trim(),
+    cycleMonths: Number(values.cycleMonths),
+    // 送出前一定通過了 required 驗證，所以這裡不會是空字串。
+    action: values.action as PartAction,
+    lastReplacedAt: values.lastReplacedAt,
+  };
+}
 
 function today(): string {
   const now = new Date();

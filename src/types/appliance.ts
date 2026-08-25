@@ -61,3 +61,16 @@ export type ApplianceMessageResponse = {
   status: boolean;
   message: string;
 };
+
+export type PartInput = {
+  name: string;
+  cycleMonths: number;
+  action: PartAction;
+  /** YYYY-MM-DD */
+  lastReplacedAt: string;
+};
+
+export type CreatePartResponse = {
+  status: boolean;
+  newPart: Part;
+};
