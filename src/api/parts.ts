@@ -35,3 +35,12 @@ export async function deletePart(
 ): Promise<void> {
   await axios.delete<PartMessageResponse>(`${partsUrl(applianceId)}${partId}`);
 }
+
+export async function patchRenewPart(
+  applianceId: string,
+  partId: string,
+): Promise<void> {
+  await axios.patch<PartMessageResponse>(
+    `${partsUrl(applianceId)}${partId}/renew`,
+  );
+}

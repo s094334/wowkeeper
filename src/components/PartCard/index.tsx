@@ -1,6 +1,7 @@
 import { Link } from "react-router";
 import type { LampStatus, Part } from "../../types/appliance";
 import Pencil from "../../assets/icons/Pencil.svg?react";
+import { usePartMutations } from "../../hooks/useParts";
 import { StatusLamp } from "../StatusLamp";
 
 type PartCardProps = {
@@ -13,6 +14,7 @@ type PartCardProps = {
 export function PartCard(props: PartCardProps) {
   const { applianceId, part, status, statusText } = props;
   const verb = part.action === "clean" ? "清洗" : "更換";
+  const { renewPart, isRenewing, errorLog } = usePartMutations(applianceId);
 
   return (
     <div className="border-cream-400 bg-surface flex flex-col gap-2.5 rounded-sm border px-4 py-3.5">
@@ -42,12 +44,18 @@ export function PartCard(props: PartCardProps) {
           </Link>
           <button
             type="button"
-            className="border-ink hover:bg-cream-100 cursor-pointer rounded-xs border px-3 py-[7px] text-sm font-medium whitespace-nowrap"
+            onClick={() => renewPart(part.id)}
+            disabled={isRenewing}
+            className="border-ink hover:bg-cream-100 cursor-pointer rounded-xs border px-3 py-[7px] text-sm font-medium whitespace-nowrap disabled:opacity-50"
           >
-            登記已{verb}
+            {isRenewing ? "登記中…" : `登記已${verb}`}
           </button>
         </div>
       </div>
+
+      {errorLog.length > 0 && (
+        <p className="text-danger text-2xs">{errorLog[0]}</p>
+      )}
     </div>
   );
 }
