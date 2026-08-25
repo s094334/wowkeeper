@@ -6,6 +6,7 @@ import type {
   Appliance,
   ApplianceInput,
   ApplianceMessageResponse,
+  CreateApplianceInput,
   CreateApplianceResponse,
   GetApplianceResponse,
   ListAppliancesResponse,
@@ -32,7 +33,9 @@ export async function getAppliance(
   return data.data;
 }
 
-export async function postAppliance(body: ApplianceInput): Promise<Appliance> {
+export async function postAppliance(
+  body: CreateApplianceInput,
+): Promise<Appliance> {
   const { data } = await axios.post<CreateApplianceResponse>(
     APPLIANCES_URL,
     body,

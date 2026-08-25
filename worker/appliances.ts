@@ -1,6 +1,14 @@
 import { generateId } from "./lib/id.js";
+import { INSERT_PART_SQL, validatePartInput } from "./parts.js";
 import { ok, fail } from "./lib/response.js";
 import type { ApplianceRow, PartRow } from "./lib/types.js";
+
+type PartInputBody = {
+  name: string;
+  cycleMonths: number;
+  action: "replace" | "clean";
+  lastReplacedAt: string;
+};
 
 const CATEGORIES = new Set([
   "aircon",
@@ -88,6 +96,26 @@ function validateApplianceInput(
   return null;
 }
 
+/**
+ * 新增家電時可以夾帶 parts 陣列一起建立。沒帶就當空陣列，帶了就每一筆都要通過耗材的驗證。
+ * 通過回傳 null，失敗回傳錯誤訊息。
+ */
+function validatePartsInput(value: unknown): string | null {
+  if (value === undefined) return null;
+  if (!Array.isArray(value)) return "欄位驗證失敗";
+
+  for (const part of value) {
+    const body =
+      typeof part === "object" && part !== null
+        ? (part as Record<string, unknown>)
+        : null;
+    const error = validatePartInput(body);
+    if (error) return error;
+  }
+
+  return null;
+}
+
 export async function listAppliances(env: Env, uid: string): Promise<Response> {
   // 兩支查詢同時發，耗材用 JOIN 一次撈完整個使用者的，避免每台家電各查一次（N+1），
   // 也不必把家電 id 一個個綁進 IN (...)。
@@ -150,6 +178,7 @@ export async function createAppliance(
   const body = await readJson(request);
   const validationError = validateApplianceInput(body);
   if (validationError || !body) return fail("新增失敗");
+  if (validatePartsInput(body.parts)) return fail("新增失敗");
 
   const name = (body.name as string).trim();
   const category = body.category as string;
@@ -160,12 +189,39 @@ export async function createAppliance(
   const id = generateId("apl");
   const now = Date.now();
 
-  await env.DB.prepare(
-    `INSERT INTO appliances (id, user_id, name, category, brand, model, purchased_at, created_at, updated_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-  )
-    .bind(id, uid, name, category, brand, model, purchasedAt, now, now)
-    .run();
+  const partRows: PartRow[] = (
+    (body.parts as PartInputBody[] | undefined) ?? []
+  ).map((part) => ({
+    id: generateId("prt"),
+    appliance_id: id,
+    name: part.name.trim(),
+    cycle_months: part.cycleMonths,
+    action: part.action,
+    last_replaced_at: part.lastReplacedAt,
+    created_at: now,
+    updated_at: now,
+  }));
+
+  // batch 是一個 SQL transaction：其中一句失敗會整批回滾，所以不會留下
+  // 「家電建好了、但耗材只寫進去一半」的資料。
+  await env.DB.batch([
+    env.DB.prepare(
+      `INSERT INTO appliances (id, user_id, name, category, brand, model, purchased_at, created_at, updated_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    ).bind(id, uid, name, category, brand, model, purchasedAt, now, now),
+    ...partRows.map((part) =>
+      env.DB.prepare(INSERT_PART_SQL).bind(
+        part.id,
+        part.appliance_id,
+        part.name,
+        part.cycle_months,
+        part.action,
+        part.last_replaced_at,
+        part.created_at,
+        part.updated_at,
+      ),
+    ),
+  ]);
 
   const row: ApplianceRow = {
     id,
@@ -180,7 +236,7 @@ export async function createAppliance(
   };
 
   return Response.json(
-    { status: true, newAppliance: serializeAppliance(row, []) },
+    { status: true, newAppliance: serializeAppliance(row, partRows) },
     { status: 201 },
   );
 }

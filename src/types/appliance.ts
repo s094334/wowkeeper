@@ -42,6 +42,14 @@ export type ApplianceInput = {
   purchasedAt?: string;
 };
 
+/**
+ * 新增家電時可以夾帶耗材，後端會用一個 transaction 一起寫入。
+ * 更新家電不吃 parts，所以只有新增用這個型別。
+ */
+export type CreateApplianceInput = ApplianceInput & {
+  parts?: PartInput[];
+};
+
 export type ListAppliancesResponse = {
   status: boolean;
   data: Appliance[];

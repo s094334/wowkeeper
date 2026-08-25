@@ -4,6 +4,10 @@ import type { PartRow } from "./lib/types.js";
 
 const ACTIONS = new Set(["replace", "clean"]);
 
+/** 新增家電時可以夾帶耗材，所以 appliances.ts 的 batch 也會用到同一句。 */
+export const INSERT_PART_SQL = `INSERT INTO parts (id, appliance_id, name, cycle_months, action, last_replaced_at, created_at, updated_at)
+   VALUES (?, ?, ?, ?, ?, ?, ?, ?)`;
+
 // 預設 UTC+8
 const TAIPEI_UTC_OFFSET_MS = 8 * 60 * 60 * 1000;
 
@@ -43,8 +47,7 @@ function serializePart(row: PartRow) {
   };
 }
 
-/** name、cycleMonths、action、lastReplacedAt 皆為必填。通過回傳 null，否則回傳錯誤訊息。 */
-function validatePartInput(
+export function validatePartInput(
   body: Record<string, unknown> | null,
 ): string | null {
   if (!body) return "欄位驗證失敗";
@@ -124,10 +127,7 @@ export async function createPart(
   const id = generateId("prt");
   const now = Date.now();
 
-  await env.DB.prepare(
-    `INSERT INTO parts (id, appliance_id, name, cycle_months, action, last_replaced_at, created_at, updated_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-  )
+  await env.DB.prepare(INSERT_PART_SQL)
     .bind(id, applianceId, name, cycleMonths, action, lastReplacedAt, now, now)
     .run();
 

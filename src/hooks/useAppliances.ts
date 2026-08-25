@@ -10,7 +10,11 @@ import {
 } from "../api/appliances";
 import { getErrorMessage } from "../api/system";
 import { applianceKeys } from "../constants/queryKeys";
-import type { Appliance, ApplianceInput } from "../types/appliance";
+import type {
+  Appliance,
+  ApplianceInput,
+  CreateApplianceInput,
+} from "../types/appliance";
 
 export type EditAppliancePayload = {
   id: string;
@@ -22,7 +26,7 @@ type UseApplianceMutationsResult = {
   isEditing: boolean;
   isRemoving: boolean;
   errorLog: string[];
-  addAppliance: UseMutateFunction<Appliance, Error, ApplianceInput>;
+  addAppliance: UseMutateFunction<Appliance, Error, CreateApplianceInput>;
   editAppliance: UseMutateFunction<void, Error, EditAppliancePayload>;
   removeAppliance: UseMutateFunction<void, Error, string>;
 };
@@ -32,7 +36,7 @@ export function useApplianceMutations(): UseApplianceMutationsResult {
   const invalidateAppliances = () =>
     queryClient.invalidateQueries({ queryKey: applianceKeys.all });
 
-  const addMutation = useMutation<Appliance, Error, ApplianceInput>({
+  const addMutation = useMutation<Appliance, Error, CreateApplianceInput>({
     mutationFn: postAppliance,
     onSettled: invalidateAppliances,
   });
