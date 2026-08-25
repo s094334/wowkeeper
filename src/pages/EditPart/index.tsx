@@ -1,26 +1,39 @@
-import { useState } from "react";
 import type { SubmitHandler } from "react-hook-form";
 import { useNavigate, useParams } from "react-router";
-import { findAppliance } from "../../api/appliances";
 import ArrowLeft from "../../assets/icons/ArrowLeft.svg?react";
 import Trash from "../../assets/icons/Trash.svg?react";
 import { ApplianceNotFound } from "../../components/ApplianceNotFound";
 import { FormError } from "../../components/common/FormError";
 import { PartFields } from "../../components/PartFields";
-import type { PartFormValues } from "../../components/PartFields/fields";
+import {
+  toPartInput,
+  type PartFormValues,
+} from "../../components/PartFields/fields";
 import { usePartForm } from "../../components/PartFields/usePartForm";
+import { useAppliance } from "../../hooks/useAppliances";
+import { usePartMutations } from "../../hooks/useParts";
+
+const PAGE =
+  "flex flex-1 flex-col gap-6 px-5 py-8 sm:mx-auto sm:w-full sm:max-w-150 sm:px-8";
 
 export function EditPart() {
   const navigate = useNavigate();
   const { id, partId } = useParams();
-  const appliance = findAppliance(id);
-  const part = appliance?.parts?.find((item) => item.id === partId);
-  const [errorLog, setErrorLog] = useState("");
+  const { appliance, isLoading, isNotFound, errorLog } = useAppliance(id);
+  const {
+    editPart,
+    removePart,
+    isEditing,
+    isRemoving,
+    errorLog: mutationErrors,
+  } = usePartMutations(id);
+
+  const part = appliance?.parts.find((item) => item.id === partId);
 
   const {
     register,
     handleSubmit,
-    formState: { errors, isSubmitting },
+    formState: { errors },
   } = usePartForm({
     name: part?.name ?? "",
     cycleMonths: String(part?.cycleMonths ?? ""),
@@ -28,40 +41,51 @@ export function EditPart() {
     lastReplacedAt: part?.lastReplacedAt ?? "",
   });
 
-  if (!appliance || !part) {
+  if (isLoading) {
+    return (
+      <main className={PAGE}>
+        <p className="text-ink-muted text-xs">載入中…</p>
+      </main>
+    );
+  }
+
+  if (isNotFound) {
+    return <ApplianceNotFound />;
+  }
+
+  if (!appliance) {
+    return (
+      <main className={PAGE}>
+        <FormError>{errorLog[0] ?? "發生錯誤，請稍後再試"}</FormError>
+      </main>
+    );
+  }
+
+  if (!part) {
     return <ApplianceNotFound />;
   }
 
   const backToAppliance = () =>
     navigate(`/appliances/${appliance.id}`, { replace: true });
 
-  const onSubmit: SubmitHandler<PartFormValues> = async (values) => {
-    setErrorLog("");
-    try {
-      console.log({ ...values, cycleMonths: Number(values.cycleMonths) });
-      backToAppliance();
-    } catch {
-      setErrorLog("儲存失敗，請稍後再試");
-    }
+  const onSubmit: SubmitHandler<PartFormValues> = (values) => {
+    editPart(
+      { partId: part.id, input: toPartInput(values) },
+      { onSuccess: backToAppliance },
+    );
   };
 
-  const handleDelete = async () => {
-    const ok = window.confirm(
+  const handleDelete = () => {
+    const confirmed = window.confirm(
       `確定要刪除「${part.name}」嗎？更換紀錄會一併消失。`,
     );
-    if (!ok) return;
+    if (!confirmed) return;
 
-    setErrorLog("");
-    try {
-      console.log("刪除", part.id);
-      backToAppliance();
-    } catch {
-      setErrorLog("刪除失敗，請稍後再試");
-    }
+    removePart(part.id, { onSuccess: backToAppliance });
   };
 
   return (
-    <main className="flex flex-1 flex-col gap-6 px-5 py-8 sm:mx-auto sm:w-full sm:max-w-150 sm:px-8">
+    <main className={PAGE}>
       <div className="flex items-center gap-2">
         <button
           type="button"
@@ -77,7 +101,8 @@ export function EditPart() {
         <button
           type="button"
           onClick={handleDelete}
-          className="text-danger hover:bg-lamp-red-bg -mr-1.5 flex size-9 shrink-0 cursor-pointer items-center justify-center rounded-full"
+          disabled={isRemoving}
+          className="text-danger hover:bg-lamp-red-bg -mr-1.5 flex size-9 shrink-0 cursor-pointer items-center justify-center rounded-full disabled:opacity-50"
         >
           <Trash width={18} height={18} />
         </button>
@@ -86,14 +111,16 @@ export function EditPart() {
       <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-6">
         <PartFields register={register} errors={errors} />
 
-        {errorLog && <FormError>{errorLog}</FormError>}
+        {mutationErrors.map((message, index) => (
+          <FormError key={index}>{message}</FormError>
+        ))}
 
         <button
           type="submit"
-          disabled={isSubmitting}
+          disabled={isEditing}
           className="wk-cta w-full cursor-pointer disabled:opacity-60"
         >
-          儲存
+          {isEditing ? "儲存中…" : "儲存"}
         </button>
       </form>
     </main>

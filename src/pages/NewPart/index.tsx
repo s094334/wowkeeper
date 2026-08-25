@@ -1,42 +1,61 @@
-import { useState } from "react";
 import type { SubmitHandler } from "react-hook-form";
 import { useNavigate, useParams } from "react-router";
-import { findAppliance } from "../../api/appliances";
 import ArrowLeft from "../../assets/icons/ArrowLeft.svg?react";
 import { ApplianceNotFound } from "../../components/ApplianceNotFound";
 import { FormError } from "../../components/common/FormError";
 import { PartFields } from "../../components/PartFields";
-import type { PartFormValues } from "../../components/PartFields/fields";
+import {
+  toPartInput,
+  type PartFormValues,
+} from "../../components/PartFields/fields";
 import { usePartForm } from "../../components/PartFields/usePartForm";
+import { useAppliance } from "../../hooks/useAppliances";
+import { usePartMutations } from "../../hooks/useParts";
+
+const PAGE =
+  "flex flex-1 flex-col gap-6 px-5 py-8 sm:mx-auto sm:w-full sm:max-w-150 sm:px-8";
 
 export function NewPart() {
   const navigate = useNavigate();
   const { id } = useParams();
-  const appliance = findAppliance(id);
-  const [errorLog, setErrorLog] = useState("");
+  const { appliance, isLoading, isNotFound, errorLog } = useAppliance(id);
+  const { addPart, isAdding, errorLog: mutationErrors } = usePartMutations(id);
 
   const {
     register,
     handleSubmit,
-    formState: { errors, isSubmitting },
+    formState: { errors },
   } = usePartForm();
 
-  if (!appliance) {
+  if (isLoading) {
+    return (
+      <main className={PAGE}>
+        <p className="text-ink-muted text-xs">載入中…</p>
+      </main>
+    );
+  }
+
+  if (isNotFound) {
     return <ApplianceNotFound />;
   }
 
-  const onSubmit: SubmitHandler<PartFormValues> = async (values) => {
-    setErrorLog("");
-    try {
-      console.log({ ...values });
-      navigate(-1);
-    } catch {
-      setErrorLog("儲存失敗，請稍後再試");
-    }
+  if (!appliance) {
+    return (
+      <main className={PAGE}>
+        <FormError>{errorLog[0] ?? "發生錯誤，請稍後再試"}</FormError>
+      </main>
+    );
+  }
+
+  const onSubmit: SubmitHandler<PartFormValues> = (values) => {
+    addPart(toPartInput(values), {
+      onSuccess: () =>
+        navigate(`/appliances/${appliance.id}`, { replace: true }),
+    });
   };
 
   return (
-    <main className="flex flex-1 flex-col gap-6 px-5 py-8 sm:mx-auto sm:w-full sm:max-w-150 sm:px-8">
+    <main className={PAGE}>
       <div className="flex items-center gap-2">
         <button
           type="button"
@@ -54,14 +73,16 @@ export function NewPart() {
       <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-6">
         <PartFields register={register} errors={errors} />
 
-        {errorLog && <FormError>{errorLog}</FormError>}
+        {mutationErrors.map((message, index) => (
+          <FormError key={index}>{message}</FormError>
+        ))}
 
         <button
           type="submit"
-          disabled={isSubmitting}
+          disabled={isAdding}
           className="wk-cta w-full cursor-pointer disabled:opacity-60"
         >
-          新增耗材
+          {isAdding ? "新增中…" : "新增耗材"}
         </button>
       </form>
     </main>
