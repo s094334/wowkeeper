@@ -5,12 +5,19 @@ import { recogniseNameplate } from "../../api/recognise";
 import AlertCircle from "../../assets/icons/AlertCircle.svg?react";
 import X from "../../assets/icons/X.svg?react";
 import { ApplianceFields } from "../../components/ApplianceFields";
-import type { ApplianceFormValues } from "../../components/ApplianceFields/fields";
+import {
+  toApplianceInput,
+  type ApplianceFormValues,
+} from "../../components/ApplianceFields/fields";
 import { FormError } from "../../components/common/FormError";
 import { PhotoCapture } from "../../components/common/PhotoCapture";
 import { PrivacyNotice } from "../../components/PrivacyNotice";
-import type { PartFormValues } from "../../components/PartFields/fields";
+import {
+  toPartInput,
+  type PartFormValues,
+} from "../../components/PartFields/fields";
 import { StepIndicator } from "../../components/StepIndicator";
+import { useApplianceMutations } from "../../hooks/useAppliances";
 import { PartsStep } from "./PartsStep";
 import { StepActions } from "./StepActions";
 
@@ -19,18 +26,22 @@ const STEPS = ["拍照", "家電資料", "耗材設定"];
 export function NewAppliance() {
   const navigate = useNavigate();
   const [step, setStep] = useState(1);
-  const [errorLog, setErrorLog] = useState("");
   const [isScanning, setIsScanning] = useState(false);
   const [scanResult, setScanResult] = useState("");
   const [scanError, setScanError] = useState("");
   const [parts, setParts] = useState<PartFormValues[]>([]);
+  const {
+    addAppliance,
+    isAdding,
+    errorLog: mutationErrors,
+  } = useApplianceMutations();
 
   const {
     register,
     handleSubmit,
     setValue,
     getValues,
-    formState: { errors, isSubmitting },
+    formState: { errors },
   } = useForm<ApplianceFormValues>({
     mode: "onBlur",
     defaultValues: { category: "" },
@@ -64,20 +75,11 @@ export function NewAppliance() {
     }
   };
 
-  const onSubmit: SubmitHandler<ApplianceFormValues> = async (values) => {
-    setErrorLog("");
-    try {
-      console.log({
-        ...values,
-        parts: parts.map((part) => ({
-          ...part,
-          cycleMonths: Number(part.cycleMonths),
-        })),
-      });
-      navigate("/", { replace: true });
-    } catch {
-      setErrorLog("儲存失敗，請稍後再試");
-    }
+  const onSubmit: SubmitHandler<ApplianceFormValues> = (values) => {
+    addAppliance(
+      { ...toApplianceInput(values), parts: parts.map(toPartInput) },
+      { onSuccess: () => navigate("/", { replace: true }) },
+    );
   };
 
   return (
@@ -138,16 +140,18 @@ export function NewAppliance() {
           />
         )}
 
-        {errorLog && (
-          <div className="px-5 pb-2 sm:px-8">
-            <FormError>{errorLog}</FormError>
+        {mutationErrors.length > 0 && (
+          <div className="flex flex-col gap-2 px-5 pb-2 sm:px-8">
+            {mutationErrors.map((message, index) => (
+              <FormError key={index}>{message}</FormError>
+            ))}
           </div>
         )}
 
         <StepActions
           step={step}
           setStep={setStep}
-          isSubmitting={isSubmitting}
+          isSubmitting={isAdding}
           onCancel={() => navigate(-1)}
           onNext={handleSubmit(() => setStep(3))}
         />
