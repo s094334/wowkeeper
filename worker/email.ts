@@ -21,15 +21,29 @@ function worstStage(parts: OverduePart[]): OverduePart["stage"] {
   return "soon";
 }
 
+/**
+ * 主旨以最急迫的階段起頭，但數字只算「該階段」的項目，其餘另外帶一句。
+ *
+ * 不能拿總數配上最急迫階段的措辭——三項裡只有一項逾期時，寫成「3 項逾期了」
+ * 是不實的。
+ */
 function buildSubject(parts: OverduePart[]): string {
-  const count = parts.length;
-  switch (worstStage(parts)) {
+  const stage = worstStage(parts);
+  const urgent = parts.filter((part) => part.stage === stage).length;
+  const rest = parts.length - urgent;
+
+  switch (stage) {
     case "overdue":
-      return `哇！有 ${count} 項該保養的項目逾期了`;
+      return rest > 0
+        ? `哇！${urgent} 項已經逾期，另有 ${rest} 項要注意`
+        : `哇！有 ${urgent} 項該保養的項目逾期了`;
     case "due":
-      return `今天有 ${count} 項該保養囉`;
+      return rest > 0
+        ? `今天有 ${urgent} 項該保養，另有 ${rest} 項快到期`
+        : `今天有 ${urgent} 項該保養囉`;
     case "soon":
-      return `提醒你，${count} 項耗材快到期了`;
+      // soon 是最輕的階段，走到這裡代表全部都是 soon，urgent 就是總數。
+      return `提醒你，${urgent} 項耗材快到期了`;
   }
 }
 
@@ -64,7 +78,7 @@ export function renderDigest(digest: UserDigest): RenderedEmail {
   const subject = buildSubject(parts);
 
   const text = [
-    `${nickname} 你好，`,
+    `${nickname} 您好，`,
     ``,
     `以下項目該保養了：`,
     ``,
