@@ -1,17 +1,25 @@
 import { SOON_WITHIN_DAYS } from "../shared/maintenance.js";
 import { DUE_AT_SQL, daysBetween } from "./lib/date.js";
 
-/** 到期後隔幾天寄最後一封追蹤信。純粹是通知的節奏，前端用不到。 */
-export const NOTIFY_FOLLOWUP_DAYS = 14;
+/**
+ * 第二封提醒的時機：到期前幾天。
+ *
+ * 第一封的時機沿用 SOON_WITHIN_DAYS（15 天），與前端轉黃燈的門檻同一個值。
+ */
+export const NOTIFY_SECOND_LEAD_DAYS = 7;
 
 /**
- * 通知的三個階段，決定信件內容：
- *   soon    到期前 15 天的預告，寄一次
- *   due     到期當天，寄一次
- *   overdue 逾期第 14 天的追蹤，寄一次
+ * 一個週期寄三封，全部在到期日當天或之前：
+ *   到期前 15 天  第一次提醒
+ *   到期前 7 天   第二次提醒
+ *   到期當天      最後提醒
  *
- * 一個週期最多就這三封，之後不再打擾。使用者按下完成保養後
- * last_notified_at 會清空，下一個週期重新開始。
+ * 之後不再打擾。使用者按下完成保養（或編輯耗材）後 last_notified_at 會清空，
+ * 下一個週期重新開始。
+ *
+ * stage 決定信件的語氣，由「今天」與到期日的關係算出，與上面的寄送時機無關：
+ * 排程若延遲執行，第三封可能在到期後才寄出，屆時 stage 會是 overdue，內容也
+ * 該說「已逾期」而不是「今天到期」。
  */
 export type NotifyStage = "soon" | "due" | "overdue";
 
@@ -51,16 +59,15 @@ type OverdueRow = {
  * 撈出這次排程該通知的耗材，連同所屬家電與使用者。
  *
  * 三個 OR 分支各對應一封信，一個週期最多寄三封：
- *   1. last_notified_at IS NULL
- *      本週期還沒寄過。進入通知期（到期前 15 天內）就寄「快到期」。
- *   2. last_notified_at < due_at 且已到期
- *      之前只寄過預告，現在到期日到了，寄「今天到期」。
- *   3. last_notified_at 落在 [due_at, due_at + 14) 且今天已過 due_at + 14
- *      寄最後一封「已逾期」追蹤信。寄完 last_notified_at 就會跳出這個區間，
- *      條件不再成立，所以只會寄一次。
+ *   1. 還沒寄過任何一封，且已進入第一個提醒點（到期前 15 天）
+ *   2. 上次通知早於第二個提醒點（到期前 7 天），且今天已抵達該點
+ *   3. 上次通知早於到期日，且今天已抵達到期日
  *
- * 用日期區間而不是「剛好等於某一天」來判斷，是為了容忍排程漏跑——某天 cron
- * 沒執行，隔天仍會補寄，而不是永遠錯過那一封。
+ * 每寄一封，last_notified_at 就往前推進，使該分支的條件不再成立，所以每封
+ * 只會寄一次；寄完第三封後三個分支都不成立，本週期結束。
+ *
+ * 條件寫成「今天已抵達某個時間點」而不是「今天剛好等於某一天」，是為了容忍
+ * 排程漏跑——某天 cron 沒執行，隔天仍會補寄，而不是永遠錯過那一封。
  *
  * 所有 ? 綁的都是今天的日期（台北時區）。
  */
@@ -83,14 +90,18 @@ const OVERDUE_SQL = `
   JOIN appliances ON appliances.id = parts.appliance_id
   JOIN users ON users.id = appliances.user_id
   WHERE users.notifications_enabled = 1
-    AND ${DUE_AT_SQL} <= date(?, '+${SOON_WITHIN_DAYS} days')
     AND (
-      parts.last_notified_at IS NULL
-      OR (parts.last_notified_at < ${DUE_AT_SQL} AND ${DUE_AT_SQL} <= ?)
+      (
+        parts.last_notified_at IS NULL
+        AND ? >= date(${DUE_AT_SQL}, '-${SOON_WITHIN_DAYS} days')
+      )
       OR (
-        parts.last_notified_at >= ${DUE_AT_SQL}
-        AND parts.last_notified_at < date(${DUE_AT_SQL}, '+${NOTIFY_FOLLOWUP_DAYS} days')
-        AND date(${DUE_AT_SQL}, '+${NOTIFY_FOLLOWUP_DAYS} days') <= ?
+        parts.last_notified_at < date(${DUE_AT_SQL}, '-${NOTIFY_SECOND_LEAD_DAYS} days')
+        AND ? >= date(${DUE_AT_SQL}, '-${NOTIFY_SECOND_LEAD_DAYS} days')
+      )
+      OR (
+        parts.last_notified_at < ${DUE_AT_SQL}
+        AND ? >= ${DUE_AT_SQL}
       )
     )
   ORDER BY users.id, due_at ASC`;
