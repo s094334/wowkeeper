@@ -1,12 +1,26 @@
 import { DUE_AT_SQL, daysBetween } from "./lib/date.js";
 
 /**
- * 同一項耗材兩次通知之間至少相隔幾天。
+ * 到期前幾天寄出預告信。
  *
- * 逾期後只提醒一次容易被忽略，但每天寄會變成騷擾。這個值決定重複提醒的節奏，
- * 耗材最短週期是 1 個月（30 天），所以不會發生「還沒到下次到期就重複提醒」。
+ * 與前端 src/lib/status.ts 的 SOON_WITHIN_DAYS 相同，所以預告信會正好在畫面
+ * 由綠燈轉黃燈的那天寄出，信件與畫面不會互相矛盾。
  */
-export const NOTIFY_COOLDOWN_DAYS = 7;
+export const NOTIFY_LEAD_DAYS = 15;
+
+/** 到期後隔幾天寄最後一封追蹤信。 */
+export const NOTIFY_FOLLOWUP_DAYS = 14;
+
+/**
+ * 通知的三個階段，決定信件內容：
+ *   soon    到期前 15 天的預告，寄一次
+ *   due     到期當天，寄一次
+ *   overdue 逾期第 14 天的追蹤，寄一次
+ *
+ * 一個週期最多就這三封，之後不再打擾。使用者按下完成保養後
+ * last_notified_at 會清空，下一個週期重新開始。
+ */
+export type NotifyStage = "soon" | "due" | "overdue";
 
 export type OverduePart = {
   partId: string;
@@ -15,6 +29,8 @@ export type OverduePart = {
   action: "replace" | "clean";
   /** YYYY-MM-DD */
   dueAt: string;
+  stage: NotifyStage;
+  /** 正數代表已逾期幾天，負數代表還有幾天到期，0 是到期當天。 */
   daysOverdue: number;
 };
 
@@ -35,13 +51,25 @@ type OverdueRow = {
   part_name: string;
   action: "replace" | "clean";
   due_at: string;
+  stage: NotifyStage;
 };
 
 /**
- * 撈出所有「已逾期、且冷卻期已過」的耗材，連同所屬家電與使用者。
+ * 撈出這次排程該通知的耗材，連同所屬家電與使用者。
  *
- * 兩個 ? 綁的都是今天的日期（台北時區）：第一個判斷是否逾期，第二個算冷卻期。
- * 已關閉通知的使用者在 SQL 層就被濾掉，不會進到寄信流程。
+ * 三個 OR 分支各對應一封信，一個週期最多寄三封：
+ *   1. last_notified_at IS NULL
+ *      本週期還沒寄過。進入通知期（到期前 15 天內）就寄「快到期」。
+ *   2. last_notified_at < due_at 且已到期
+ *      之前只寄過預告，現在到期日到了，寄「今天到期」。
+ *   3. last_notified_at 落在 [due_at, due_at + 14) 且今天已過 due_at + 14
+ *      寄最後一封「已逾期」追蹤信。寄完 last_notified_at 就會跳出這個區間，
+ *      條件不再成立，所以只會寄一次。
+ *
+ * 用日期區間而不是「剛好等於某一天」來判斷，是為了容忍排程漏跑——某天 cron
+ * 沒執行，隔天仍會補寄，而不是永遠錯過那一封。
+ *
+ * 所有 ? 綁的都是今天的日期（台北時區）。
  */
 const OVERDUE_SQL = `
   SELECT
@@ -52,15 +80,25 @@ const OVERDUE_SQL = `
     parts.id AS part_id,
     parts.name AS part_name,
     parts.action,
-    ${DUE_AT_SQL} AS due_at
+    ${DUE_AT_SQL} AS due_at,
+    CASE
+      WHEN ${DUE_AT_SQL} > ? THEN 'soon'
+      WHEN ${DUE_AT_SQL} = ? THEN 'due'
+      ELSE 'overdue'
+    END AS stage
   FROM parts
   JOIN appliances ON appliances.id = parts.appliance_id
   JOIN users ON users.id = appliances.user_id
   WHERE users.notifications_enabled = 1
-    AND ${DUE_AT_SQL} < ?
+    AND ${DUE_AT_SQL} <= date(?, '+${NOTIFY_LEAD_DAYS} days')
     AND (
       parts.last_notified_at IS NULL
-      OR parts.last_notified_at <= date(?, '-${NOTIFY_COOLDOWN_DAYS} days')
+      OR (parts.last_notified_at < ${DUE_AT_SQL} AND ${DUE_AT_SQL} <= ?)
+      OR (
+        parts.last_notified_at >= ${DUE_AT_SQL}
+        AND parts.last_notified_at < date(${DUE_AT_SQL}, '+${NOTIFY_FOLLOWUP_DAYS} days')
+        AND date(${DUE_AT_SQL}, '+${NOTIFY_FOLLOWUP_DAYS} days') <= ?
+      )
     )
   ORDER BY users.id, due_at ASC`;
 
@@ -69,8 +107,10 @@ export async function findOverdueByUser(
   env: Env,
   today: string,
 ): Promise<UserDigest[]> {
+  // 五個 ? 都是今天，順序對應它們在 SQL 字串中出現的位置：
+  // CASE 的兩個判斷、通知期起點、到期日比較、重複提醒的間隔。
   const { results } = await env.DB.prepare(OVERDUE_SQL)
-    .bind(today, today)
+    .bind(today, today, today, today, today)
     .all<OverdueRow>();
 
   const byUser = new Map<string, UserDigest>();
@@ -93,6 +133,7 @@ export async function findOverdueByUser(
       applianceName: row.appliance_name,
       action: row.action,
       dueAt: row.due_at,
+      stage: row.stage,
       daysOverdue: daysBetween(row.due_at, today),
     });
   }
