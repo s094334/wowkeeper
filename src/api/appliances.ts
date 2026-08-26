@@ -1,7 +1,6 @@
 import axios from "axios";
 import type { AxiosRequestConfig } from "axios";
 import { APPLIANCES_URL } from "../constants/apiUrl";
-import { APPLIANCES } from "../data/appliances";
 import type {
   Appliance,
   ApplianceInput,
@@ -52,8 +51,4 @@ export async function putAppliance(
 
 export async function deleteAppliance(id: string): Promise<void> {
   await axios.delete<ApplianceMessageResponse>(`${APPLIANCES_URL}${id}`);
-}
-
-export function findAppliance(id: string | undefined) {
-  return APPLIANCES.find((item) => item.id === id);
 }
