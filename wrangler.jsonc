@@ -9,9 +9,6 @@
   "ai": {
     "binding": "AI"
   },
-  // database_id 只是識別碼、不是機密，可以正常進版控。
-  // 本機開發（npm run dev）走 miniflare 的本機 D1，不會碰到這個遠端資料庫；
-  // 遠端建表用：npx wrangler d1 execute wowkeeper-db --remote --file=./worker/schema.sql
   "d1_databases": [
     {
       "binding": "DB",
