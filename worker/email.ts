@@ -1,6 +1,5 @@
 import type { OverduePart, UserDigest } from "./notifications.js";
 
-/** 信裡的連結指向正式站，與 wrangler.jsonc 的 routes 一致。 */
 const APP_URL = "https://wowkeeper.xin-ping.com";
 
 const ACTION_LABELS: Record<OverduePart["action"], string> = {
@@ -14,19 +13,12 @@ export type RenderedEmail = {
   html: string;
 };
 
-/** 這封信裡最急迫的狀態，決定標題的語氣。 */
 function worstStage(parts: OverduePart[]): OverduePart["stage"] {
   if (parts.some((p) => p.stage === "overdue")) return "overdue";
   if (parts.some((p) => p.stage === "due")) return "due";
   return "soon";
 }
 
-/**
- * 主旨以最急迫的階段起頭，但數字只算「該階段」的項目，其餘另外帶一句。
- *
- * 不能拿總數配上最急迫階段的措辭——三項裡只有一項逾期時，寫成「3 項逾期了」
- * 是不實的。
- */
 function buildSubject(parts: OverduePart[]): string {
   const stage = worstStage(parts);
   const urgent = parts.filter((part) => part.stage === stage).length;
@@ -39,15 +31,13 @@ function buildSubject(parts: OverduePart[]): string {
         : `哇！有 ${urgent} 項該保養的項目逾期了`;
     case "due":
       return rest > 0
-        ? `今天有 ${urgent} 項該保養，另有 ${rest} 項快到期`
+        ? `今天有 ${urgent} 項該保養，另有 ${rest} 項要注意`
         : `今天有 ${urgent} 項該保養囉`;
     case "soon":
-      // soon 是最輕的階段，走到這裡代表全部都是 soon，urgent 就是總數。
-      return `提醒你，${urgent} 項耗材快到期了`;
+      return `提醒你，${urgent} 項要注意`;
   }
 }
 
-/** 單一項目的狀態描述，例如「逾期 14 天」「今天到期」「15 天後到期」。 */
 function statusText(part: OverduePart): string {
   if (part.daysOverdue > 0) return `逾期 ${part.daysOverdue} 天`;
   if (part.daysOverdue === 0) return "今天到期";
@@ -67,12 +57,6 @@ function escapeHtml(value: string): string {
     .replace(/"/g, "&quot;");
 }
 
-/**
- * 把一位使用者的逾期彙整算成一封信。
- *
- * text 與 html 兩種格式都要給：有些信件軟體只顯示純文字，而且缺少 text 版本
- * 會讓垃圾信分數變高。
- */
 export function renderDigest(digest: UserDigest): RenderedEmail {
   const { nickname, parts } = digest;
   const subject = buildSubject(parts);
@@ -90,10 +74,9 @@ export function renderDigest(digest: UserDigest): RenderedEmail {
     `— WowKeeper`,
   ].join("\n");
 
-  // 信件軟體對 CSS 的支援很有限，所以用 inline style、不用 class 或外部樣式表。
   const html = `
 <div style="font-family:-apple-system,'Noto Sans TC',sans-serif;max-width:520px;margin:0 auto;padding:24px;color:#2b2622;">
-  <p style="font-size:16px;margin:0 0 20px;">${escapeHtml(nickname)} 你好，</p>
+  <p style="font-size:16px;margin:0 0 20px;">${escapeHtml(nickname)} 您好，</p>
   <p style="font-size:15px;margin:0 0 12px;">以下項目該保養了：</p>
   <ul style="padding-left:20px;margin:0 0 24px;">
     ${parts
