@@ -77,7 +77,7 @@ export function renderDigest(digest: UserDigest): RenderedEmail {
   ].join("\n");
 
   const html = `
-<div style="font-family:-apple-system,'Noto Sans TC',sans-serif;max-width:520px;margin:0 auto;padding:24px;color:#2b2622;">
+<div style="font-family:-apple-system,'Noto Sans TC',sans-serif;max-width:520px;margin:0;padding:24px;color:#2b2622;">
   <p style="font-size:16px;margin:0 0 20px;">${escapeHtml(nickname)} 您好，</p>
   <p style="font-size:15px;margin:0 0 12px;">以下項目該保養了：</p>
   <ul style="padding-left:20px;margin:0 0 24px;">
