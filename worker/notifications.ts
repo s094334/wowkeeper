@@ -1,14 +1,7 @@
+import { SOON_WITHIN_DAYS } from "../shared/maintenance.js";
 import { DUE_AT_SQL, daysBetween } from "./lib/date.js";
 
-/**
- * 到期前幾天寄出預告信。
- *
- * 與前端 src/lib/status.ts 的 SOON_WITHIN_DAYS 相同，所以預告信會正好在畫面
- * 由綠燈轉黃燈的那天寄出，信件與畫面不會互相矛盾。
- */
-export const NOTIFY_LEAD_DAYS = 15;
-
-/** 到期後隔幾天寄最後一封追蹤信。 */
+/** 到期後隔幾天寄最後一封追蹤信。純粹是通知的節奏，前端用不到。 */
 export const NOTIFY_FOLLOWUP_DAYS = 14;
 
 /**
@@ -90,7 +83,7 @@ const OVERDUE_SQL = `
   JOIN appliances ON appliances.id = parts.appliance_id
   JOIN users ON users.id = appliances.user_id
   WHERE users.notifications_enabled = 1
-    AND ${DUE_AT_SQL} <= date(?, '+${NOTIFY_LEAD_DAYS} days')
+    AND ${DUE_AT_SQL} <= date(?, '+${SOON_WITHIN_DAYS} days')
     AND (
       parts.last_notified_at IS NULL
       OR (parts.last_notified_at < ${DUE_AT_SQL} AND ${DUE_AT_SQL} <= ?)

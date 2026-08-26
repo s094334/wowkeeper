@@ -1,13 +1,10 @@
 /**
- * 日期規則的單一來源。
+ * worker 端的日期工具。
  *
- * 前端 src/lib/status.ts 用同一組規則計算到期日與逾期天數。兩邊必須一致，
- * 否則會出現「畫面顯示還沒到期，但通知信已經寄出」這種矛盾。改動這裡時
- * 請一併檢查 src/lib/status.ts。
+ * 週期規則的常數放在 shared/maintenance.ts，與前端 src/lib/status.ts 共用同一份，
+ * 所以到期日的算法兩邊必定一致，不會出現「畫面顯示還沒到期、通知信卻已寄出」。
  */
-
-/** 一個「週期月」當 30 天算，與前端 DAYS_PER_CYCLE_MONTH 相同。 */
-export const DAYS_PER_CYCLE_MONTH = 30;
+import { DAYS_PER_CYCLE_MONTH } from "../../shared/maintenance.js";
 
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
 

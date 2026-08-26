@@ -1,5 +1,8 @@
-const SOON_WITHIN_DAYS = 15;
-const DAYS_PER_CYCLE_MONTH = 30;
+import {
+  DAYS_PER_CYCLE_MONTH,
+  SOON_WITHIN_DAYS,
+} from "../../shared/maintenance";
+
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
 
 export type LampStatus = "overdue" | "soon" | "ok";
