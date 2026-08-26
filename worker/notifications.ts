@@ -12,6 +12,17 @@ export const NOTIFY_SECOND_LEAD_DAYS = 7;
 export const NOTIFY_THIRD_OVERDUE_DAYS = 1;
 
 /**
+ * 兩封信之間至少要隔幾天。
+ *
+ * 排程漏跑時，較早的提醒點會延後觸發，可能跟下一個提醒點擠在一起——例如第二封
+ * 延到到期當天才寄，隔天第三封又寄一次。這個下限會把擠在一起的那封略過，
+ * 使用者不會在兩天內連收兩封講同一件事的信。
+ *
+ * 正常情況下提醒點本來就相隔 7 天以上，這個限制不會生效。
+ */
+export const NOTIFY_MIN_GAP_DAYS = 3;
+
+/**
  * 一個週期寄三封：
  *   到期前 15 天  第一次提醒
  *   到期前 7 天   第二次提醒
@@ -58,19 +69,37 @@ type OverdueRow = {
   stage: NotifyStage;
 };
 
+/** 相對到期日偏移 N 天的 SQL 運算式，N 為負代表到期前。 */
+function dueOffset(days: number): string {
+  const sign = days < 0 ? "-" : "+";
+  return `date(${DUE_AT_SQL}, '${sign}${Math.abs(days)} days')`;
+}
+
+/** 三個提醒點，相對到期日的天數。 */
+const MILESTONES = [
+  -SOON_WITHIN_DAYS, // 到期前 15 天
+  -NOTIFY_SECOND_LEAD_DAYS, // 到期前 7 天
+  NOTIFY_THIRD_OVERDUE_DAYS, // 逾期第 1 天
+];
+
 /**
  * 撈出這次排程該通知的耗材，連同所屬家電與使用者。
  *
- * 三個 OR 分支各對應一封信，一個週期最多寄三封：
- *   1. 還沒寄過任何一封，且已進入第一個提醒點（到期前 15 天）
- *   2. 上次通知早於第二個提醒點（到期前 7 天），且今天已抵達該點
- *   3. 上次通知早於第三個提醒點（逾期第 1 天），且今天已抵達該點
+ * 三個 OR 分支各對應一個提醒點，一個週期最多寄三封。每個分支要成立需同時滿足：
+ *   a. 今天已抵達該提醒點           → 排程漏跑時隔天仍會補寄，不會永遠錯過
+ *   b. 上次通知距離該提醒點至少 3 天 → 見下方說明
  *
- * 每寄一封，last_notified_at 就往前推進，使該分支的條件不再成立，所以每封
- * 只會寄一次；寄完第三封後三個分支都不成立，本週期結束。
+ * 條件 b 的比較基準是「提醒點」而不是「今天」，這個差別決定了延遲時的行為：
  *
- * 條件寫成「今天已抵達某個時間點」而不是「今天剛好等於某一天」，是為了容忍
- * 排程漏跑——某天 cron 沒執行，隔天仍會補寄，而不是永遠錯過那一封。
+ *   以今天為基準  上次通知太近 → 今天先跳過，過幾天間隔夠了再補寄（延後）
+ *   以提醒點為基準 上次通知太近 → 這個提醒點永遠不成立（取消）
+ *
+ * 取後者。排程漏跑導致某個提醒點延後觸發時，它會跟下一個提醒點擠在一起，
+ * 而擠在一起的兩封信講的是同一件事——這時只寄較新的那封，舊的直接作廢，
+ * 使用者不會在兩天內連收兩封重複的信。
+ *
+ * 每寄一封 last_notified_at 就推進到今天，使已抵達的提醒點都不再成立，
+ * 所以每封只會寄一次。
  *
  * 所有 ? 綁的都是今天的日期（台北時區）。
  */
@@ -94,18 +123,15 @@ const OVERDUE_SQL = `
   JOIN users ON users.id = appliances.user_id
   WHERE users.notifications_enabled = 1
     AND (
-      (
-        parts.last_notified_at IS NULL
-        AND ? >= date(${DUE_AT_SQL}, '-${SOON_WITHIN_DAYS} days')
-      )
-      OR (
-        parts.last_notified_at < date(${DUE_AT_SQL}, '-${NOTIFY_SECOND_LEAD_DAYS} days')
-        AND ? >= date(${DUE_AT_SQL}, '-${NOTIFY_SECOND_LEAD_DAYS} days')
-      )
-      OR (
-        parts.last_notified_at < date(${DUE_AT_SQL}, '+${NOTIFY_THIRD_OVERDUE_DAYS} days')
-        AND ? >= date(${DUE_AT_SQL}, '+${NOTIFY_THIRD_OVERDUE_DAYS} days')
-      )
+${MILESTONES.map(
+  (offset) => `      (
+        (
+          parts.last_notified_at IS NULL
+          OR parts.last_notified_at <= ${dueOffset(offset - NOTIFY_MIN_GAP_DAYS)}
+        )
+        AND ? >= ${dueOffset(offset)}
+      )`,
+).join("\n      OR\n")}
     )
   ORDER BY users.id, due_at ASC`;
 
@@ -114,10 +140,10 @@ export async function findOverdueByUser(
   env: Env,
   today: string,
 ): Promise<UserDigest[]> {
-  // 五個 ? 都是今天，順序對應它們在 SQL 字串中出現的位置：
-  // CASE 的兩個判斷、通知期起點、到期日比較、重複提醒的間隔。
+  // 六個 ? 都是今天，順序對應它們在 SQL 字串中出現的位置：
+  // CASE 的兩個判斷、最小間隔、三個提醒點各一個。
   const { results } = await env.DB.prepare(OVERDUE_SQL)
-    .bind(today, today, today, today, today)
+    .bind(today, today, today, today, today, today)
     .all<OverdueRow>();
 
   const byUser = new Map<string, UserDigest>();
