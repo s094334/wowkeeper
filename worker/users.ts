@@ -7,6 +7,10 @@ import type { UserRow } from "./lib/types.js";
 
 const TOKEN_TTL_SECONDS = 60 * 60 * 24 * 7; // 7 天
 
+// 與前端 src/pages/Register/fields.ts 的規則一致。前端擋得住一般使用者，
+// 但 API 可以被直接呼叫，所以這裡是繞過表單時的最後一道防線。
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
 function isNonEmptyString(value: unknown): value is string {
   return typeof value === "string" && value.trim().length > 0;
 }
@@ -42,6 +46,9 @@ export async function signUp(request: Request, env: Env): Promise<Response> {
   }
 
   const normalizedEmail = email.trim().toLowerCase();
+  if (!EMAIL_PATTERN.test(normalizedEmail)) {
+    return fail("欄位驗證失敗");
+  }
 
   const existing = await env.DB.prepare("SELECT id FROM users WHERE email = ?")
     .bind(normalizedEmail)
