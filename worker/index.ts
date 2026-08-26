@@ -13,8 +13,8 @@ import {
   deletePart,
   renewPart,
 } from "./parts.js";
-import { renderDigest } from "./email.js";
-import { findOverdueByUser } from "./notifications.js";
+import { MAIL_FROM, renderDigest } from "./email.js";
+import { findOverdueByUser, markNotified } from "./notifications.js";
 import { authenticate } from "./lib/auth.js";
 import { taipeiToday } from "./lib/date.js";
 import { fail } from "./lib/response.js";
@@ -129,9 +129,10 @@ async function handle(request: Request, env: Env): Promise<Response> {
 /**
  * 每天 01:00 UTC（台北早上 9 點）由 cron 觸發，見 wrangler.jsonc 的 triggers。
  *
- * ⚠️ 目前是 dry run：只算出該寄什麼並記錄下來，還沒真的寄信，也刻意不呼叫
- *    markNotified()——沒寄出去卻標記成已通知的話，那次提醒就永久遺失了。
- *    等 send_email binding 接上之後，順序才會變成「寄送成功 → 標記」。
+ * 寄送成功才呼叫 markNotified()。順序顛倒的話，一旦寄送失敗那次提醒就永久遺失
+ * ——耗材還在逾期，系統卻以為已經通知過。失敗時跳過標記，下次排程會重試。
+ *
+ * 單一使用者寄送失敗不影響其他人，所以錯誤在迴圈內接住而不是往外拋。
  */
 async function runDailyNotifications(env: Env): Promise<void> {
   const today = taipeiToday();
@@ -142,17 +143,34 @@ async function runDailyNotifications(env: Env): Promise<void> {
     return;
   }
 
-  const partCount = digests.reduce((sum, d) => sum + d.parts.length, 0);
-  console.log(
-    `[notify] ${today} 準備通知 ${digests.length} 位使用者、共 ${partCount} 項`,
-  );
+  let sent = 0;
 
   for (const digest of digests) {
-    const { subject, text } = renderDigest(digest);
-    console.log(`[notify] ── ${digest.email}`);
-    console.log(`[notify] 主旨：${subject}`);
-    console.log(text);
+    const { subject, text, html } = renderDigest(digest);
+
+    try {
+      await env.EMAIL.send({
+        to: digest.email,
+        from: MAIL_FROM,
+        subject,
+        text,
+        html,
+      });
+    } catch (error) {
+      console.error(`[notify] 寄給 ${digest.email} 失敗`, error);
+      continue;
+    }
+
+    await markNotified(
+      env,
+      digest.parts.map((part) => part.partId),
+      today,
+    );
+    sent++;
+    console.log(`[notify] 已寄給 ${digest.email}（${digest.parts.length} 項）`);
   }
+
+  console.log(`[notify] ${today} 寄出 ${sent}/${digests.length} 封`);
 }
 
 export default {

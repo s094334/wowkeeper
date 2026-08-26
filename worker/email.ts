@@ -2,6 +2,8 @@ import type { OverduePart, UserDigest } from "./notifications.js";
 
 const APP_URL = "https://wowkeeper.xin-ping.com";
 
+export const MAIL_FROM = { email: "noreply@xin-ping.com", name: "WowKeeper" };
+
 const ACTION_LABELS: Record<OverduePart["action"], string> = {
   replace: "更換",
   clean: "清潔",
