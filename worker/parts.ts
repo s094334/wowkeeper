@@ -37,16 +37,6 @@ async function readJson(
   }
 }
 
-function serializePart(row: PartRow) {
-  return {
-    id: row.id,
-    name: row.name,
-    cycleMonths: row.cycle_months,
-    action: row.action,
-    lastReplacedAt: row.last_replaced_at,
-  };
-}
-
 export function validatePartInput(
   body: Record<string, unknown> | null,
 ): string | null {
@@ -87,23 +77,6 @@ async function findOwnedPart(
   return env.DB.prepare("SELECT * FROM parts WHERE id = ? AND appliance_id = ?")
     .bind(partId, applianceId)
     .first<PartRow>();
-}
-
-export async function listParts(
-  env: Env,
-  uid: string,
-  applianceId: string,
-): Promise<Response> {
-  const appliance = await findOwnedAppliance(env, uid, applianceId);
-  if (!appliance) return fail("找不到該家電", 404);
-
-  const { results } = await env.DB.prepare(
-    "SELECT * FROM parts WHERE appliance_id = ? ORDER BY created_at ASC",
-  )
-    .bind(applianceId)
-    .all<PartRow>();
-
-  return ok({ data: results.map(serializePart) });
 }
 
 export async function createPart(

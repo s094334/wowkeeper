@@ -8,7 +8,6 @@ import {
   deleteAppliance,
 } from "./appliances.js";
 import {
-  listParts,
   createPart,
   updatePart,
   deletePart,
@@ -81,11 +80,6 @@ async function handle(request: Request, env: Env): Promise<Response> {
   const partsMatch = partsCollection.exec(url);
   if (partsMatch) {
     const applianceId = partsMatch.pathname.groups.applianceId as string;
-    if (method === "GET") {
-      const auth = await authenticate(request, env);
-      if (!auth) return fail("取得失敗", 401);
-      return listParts(env, auth.uid, applianceId);
-    }
     if (method === "POST") {
       const auth = await authenticate(request, env);
       if (!auth) return fail("新增失敗", 401);
