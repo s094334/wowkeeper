@@ -74,6 +74,7 @@ export function renderDigest(digest: UserDigest): RenderedEmail {
     APP_URL,
     ``,
     `— WowKeeper`,
+    `這是系統自動發送的信件，請勿直接回覆。`,
   ].join("\n");
 
   const html = `
@@ -100,7 +101,8 @@ export function renderDigest(digest: UserDigest): RenderedEmail {
     </a>
   </p>
   <p style="font-size:12px;color:#9c948c;margin:0;border-top:1px solid #e5ded6;padding-top:16px;">
-    WowKeeper — 型號一秒查，濾網隨時換
+    WowKeeper — 型號一秒查，濾網隨時換<br />
+    這是系統自動發送的信件，請勿直接回覆。
   </p>
 </div>`.trim();
 
