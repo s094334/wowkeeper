@@ -134,9 +134,34 @@ async function handle(request: Request, env: Env): Promise<Response> {
  *
  * 單一使用者寄送失敗不影響其他人，所以錯誤在迴圈內接住而不是往外拋。
  */
+/**
+ * 只有名單上的地址收得到信，用來在開發與 demo 期間避免誤寄給真實使用者。
+ * NOTIFY_ALLOWLIST 留空代表不限制，正式開放時就是這個設定。
+ */
+function allowedRecipients(env: Env): Set<string> | null {
+  const raw = env.NOTIFY_ALLOWLIST?.trim();
+  if (!raw) return null;
+  return new Set(
+    raw
+      .split(",")
+      .map((email) => email.trim().toLowerCase())
+      .filter(Boolean),
+  );
+}
+
 async function runDailyNotifications(env: Env): Promise<void> {
   const today = taipeiToday();
-  const digests = await findOverdueByUser(env, today);
+  const allowlist = allowedRecipients(env);
+  const all = await findOverdueByUser(env, today);
+
+  const digests = allowlist
+    ? all.filter((digest) => allowlist.has(digest.email.toLowerCase()))
+    : all;
+
+  const skipped = all.length - digests.length;
+  if (skipped > 0) {
+    console.log(`[notify] 白名單過濾掉 ${skipped} 位收件人`);
+  }
 
   if (digests.length === 0) {
     console.log(`[notify] ${today} 沒有需要通知的項目`);
