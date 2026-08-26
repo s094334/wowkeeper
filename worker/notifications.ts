@@ -8,18 +8,21 @@ import { DUE_AT_SQL, daysBetween } from "./lib/date.js";
  */
 export const NOTIFY_SECOND_LEAD_DAYS = 7;
 
+/** 第三封提醒的時機：逾期第幾天。 */
+export const NOTIFY_THIRD_OVERDUE_DAYS = 1;
+
 /**
- * 一個週期寄三封，全部在到期日當天或之前：
+ * 一個週期寄三封：
  *   到期前 15 天  第一次提醒
  *   到期前 7 天   第二次提醒
- *   到期當天      最後提醒
+ *   逾期第 1 天   最後提醒
  *
  * 之後不再打擾。使用者按下完成保養（或編輯耗材）後 last_notified_at 會清空，
  * 下一個週期重新開始。
  *
- * stage 決定信件的語氣，由「今天」與到期日的關係算出，與上面的寄送時機無關：
- * 排程若延遲執行，第三封可能在到期後才寄出，屆時 stage 會是 overdue，內容也
- * 該說「已逾期」而不是「今天到期」。
+ * stage 決定信件的語氣，由「今天」與到期日的關係算出，與上面的寄送時機無關。
+ * 前兩封通常是 soon；第三封在排程準時的情況下是 overdue，若當天沒跑而延後到
+ * 更晚才寄，仍然是 overdue，只是天數變多。
  */
 export type NotifyStage = "soon" | "due" | "overdue";
 
@@ -61,7 +64,7 @@ type OverdueRow = {
  * 三個 OR 分支各對應一封信，一個週期最多寄三封：
  *   1. 還沒寄過任何一封，且已進入第一個提醒點（到期前 15 天）
  *   2. 上次通知早於第二個提醒點（到期前 7 天），且今天已抵達該點
- *   3. 上次通知早於到期日，且今天已抵達到期日
+ *   3. 上次通知早於第三個提醒點（逾期第 1 天），且今天已抵達該點
  *
  * 每寄一封，last_notified_at 就往前推進，使該分支的條件不再成立，所以每封
  * 只會寄一次；寄完第三封後三個分支都不成立，本週期結束。
@@ -100,8 +103,8 @@ const OVERDUE_SQL = `
         AND ? >= date(${DUE_AT_SQL}, '-${NOTIFY_SECOND_LEAD_DAYS} days')
       )
       OR (
-        parts.last_notified_at < ${DUE_AT_SQL}
-        AND ? >= ${DUE_AT_SQL}
+        parts.last_notified_at < date(${DUE_AT_SQL}, '+${NOTIFY_THIRD_OVERDUE_DAYS} days')
+        AND ? >= date(${DUE_AT_SQL}, '+${NOTIFY_THIRD_OVERDUE_DAYS} days')
       )
     )
   ORDER BY users.id, due_at ASC`;
