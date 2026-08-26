@@ -1,6 +1,7 @@
 import {
   DAYS_PER_CYCLE_MONTH,
   SOON_WITHIN_DAYS,
+  taipeiDayNumber,
 } from "../../shared/maintenance";
 
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
@@ -24,8 +25,14 @@ function dayNumberOf(dateText: string, plusDays = 0): number {
   return Date.UTC(year, month - 1, day + plusDays);
 }
 
+/**
+ * 「今天」固定以台北時間判斷，不使用瀏覽器所在時區。
+ *
+ * 後端排程寄信時也用同一套規則，所以畫面轉紅燈的那天，正好就是提醒信寄出的
+ * 那天。使用者人在國外時，看到的狀態不會跟收到的信對不上。
+ */
 function todayDayNumber(today: Date): number {
-  return Date.UTC(today.getFullYear(), today.getMonth(), today.getDate());
+  return taipeiDayNumber(today);
 }
 
 function dueDayNumber(part: PartLike): number {

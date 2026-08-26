@@ -1,3 +1,4 @@
+import { taipeiToday } from "../../../shared/maintenance";
 import type { PartAction, PartInput } from "../../types/appliance";
 import type { FieldConfig } from "../../types/form";
 
@@ -22,13 +23,6 @@ export function toPartInput(values: PartFormValues): PartInput {
     action: values.action as PartAction,
     lastReplacedAt: values.lastReplacedAt,
   };
-}
-
-function today(): string {
-  const now = new Date();
-  const month = String(now.getMonth() + 1).padStart(2, "0");
-  const day = String(now.getDate()).padStart(2, "0");
-  return `${now.getFullYear()}-${month}-${day}`;
 }
 
 export const ACTION_LABELS: Record<PartAction, string> = {
@@ -62,7 +56,7 @@ export const fields: FieldConfig<PartFormValues>[] = [
     label: "上次更換日期",
     name: "lastReplacedAt",
     type: "date",
-    max: today(),
+    max: taipeiToday(),
     requiredMessage: "請選擇上次更換的日期",
   },
 ];
