@@ -13,7 +13,10 @@ import {
   deletePart,
   renewPart,
 } from "./parts.js";
+import { renderDigest } from "./email.js";
+import { findOverdueByUser } from "./notifications.js";
 import { authenticate } from "./lib/auth.js";
+import { taipeiToday } from "./lib/date.js";
 import { fail } from "./lib/response.js";
 
 const appliancesCollection = new URLPattern({ pathname: "/api/appliances/" });
@@ -123,6 +126,35 @@ async function handle(request: Request, env: Env): Promise<Response> {
   return new Response(null, { status: 404 });
 }
 
+/**
+ * 每天 01:00 UTC（台北早上 9 點）由 cron 觸發，見 wrangler.jsonc 的 triggers。
+ *
+ * ⚠️ 目前是 dry run：只算出該寄什麼並記錄下來，還沒真的寄信，也刻意不呼叫
+ *    markNotified()——沒寄出去卻標記成已通知的話，那次提醒就永久遺失了。
+ *    等 send_email binding 接上之後，順序才會變成「寄送成功 → 標記」。
+ */
+async function runDailyNotifications(env: Env): Promise<void> {
+  const today = taipeiToday();
+  const digests = await findOverdueByUser(env, today);
+
+  if (digests.length === 0) {
+    console.log(`[notify] ${today} 沒有需要通知的項目`);
+    return;
+  }
+
+  const partCount = digests.reduce((sum, d) => sum + d.parts.length, 0);
+  console.log(
+    `[notify] ${today} 準備通知 ${digests.length} 位使用者、共 ${partCount} 項`,
+  );
+
+  for (const digest of digests) {
+    const { subject, text } = renderDigest(digest);
+    console.log(`[notify] ── ${digest.email}`);
+    console.log(`[notify] 主旨：${subject}`);
+    console.log(text);
+  }
+}
+
 export default {
   async fetch(request, env) {
     try {
@@ -131,5 +163,14 @@ export default {
       console.error("未預期的錯誤", error);
       return fail("伺服器發生錯誤", 500);
     }
+  },
+
+  async scheduled(_controller, env, ctx) {
+    // waitUntil 讓 worker 等這個 promise 結束才回收，否則排程可能在寄完之前就被中斷。
+    ctx.waitUntil(
+      runDailyNotifications(env).catch((error: unknown) => {
+        console.error("[notify] 排程執行失敗", error);
+      }),
+    );
   },
 } satisfies ExportedHandler<Env>;
