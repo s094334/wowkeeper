@@ -9,19 +9,14 @@
   "ai": {
     "binding": "AI"
   },
-  // ⚠️ database_id 還是佔位值，本機開發（--local / npm run dev）不會驗證它，
-  //    但這樣直接 deploy 到 Cloudflare 會失敗（找不到該資料庫）。
-  //    部署前要先：
-  //      1. npx wrangler login
-  //      2. npx wrangler d1 create wowkeeper-db，把回傳的 database_id 貼到下面
-  //      3. npx wrangler d1 execute wowkeeper-db --remote --file=./worker/schema.sql 建表
-  //      4. npx wrangler secret put JWT_SECRET（機密只走這裡，不進版控）
-  //    database_id 只是識別碼、不是機密，可以正常進版控。
+  // database_id 只是識別碼、不是機密，可以正常進版控。
+  // 本機開發（npm run dev）走 miniflare 的本機 D1，不會碰到這個遠端資料庫；
+  // 遠端建表用：npx wrangler d1 execute wowkeeper-db --remote --file=./worker/schema.sql
   "d1_databases": [
     {
       "binding": "DB",
       "database_name": "wowkeeper-db",
-      "database_id": "REPLACE_WITH_D1_DATABASE_ID"
+      "database_id": "6de26d2e-0450-4af8-8b8e-e67d244201a6"
     }
   ],
   "observability": {
