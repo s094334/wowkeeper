@@ -1,3 +1,4 @@
+import { taipeiToday } from "./lib/date.js";
 import { generateId } from "./lib/id.js";
 import { ok, fail } from "./lib/response.js";
 import type { PartRow } from "./lib/types.js";
@@ -7,14 +8,6 @@ const ACTIONS = new Set(["replace", "clean"]);
 /** 新增家電時可以夾帶耗材，所以 appliances.ts 的 batch 也會用到同一句。 */
 export const INSERT_PART_SQL = `INSERT INTO parts (id, appliance_id, name, cycle_months, action, last_replaced_at, created_at, updated_at)
    VALUES (?, ?, ?, ?, ?, ?, ?, ?)`;
-
-// 預設 UTC+8
-const TAIPEI_UTC_OFFSET_MS = 8 * 60 * 60 * 1000;
-
-/** 台北當地的今天，YYYY-MM-DD。 */
-function taipeiToday(): string {
-  return new Date(Date.now() + TAIPEI_UTC_OFFSET_MS).toISOString().slice(0, 10);
-}
 
 function isNonEmptyString(value: unknown): value is string {
   return typeof value === "string" && value.trim().length > 0;
@@ -132,8 +125,10 @@ export async function updatePart(
   const action = body.action as "replace" | "clean";
   const lastReplacedAt = body.lastReplacedAt as string;
 
+  // 編輯有可能改到 last_replaced_at 或 cycle_months，兩者都會讓到期日移動，
+  // 所以跟 renewPart 一樣把通知紀錄清掉，讓新的週期重新判斷。
   await env.DB.prepare(
-    `UPDATE parts SET name = ?, cycle_months = ?, action = ?, last_replaced_at = ?, updated_at = ?
+    `UPDATE parts SET name = ?, cycle_months = ?, action = ?, last_replaced_at = ?, last_notified_at = NULL, updated_at = ?
      WHERE id = ?`,
   )
     .bind(name, cycleMonths, action, lastReplacedAt, Date.now(), partId)
@@ -167,8 +162,10 @@ export async function renewPart(
 
   const today = taipeiToday();
 
+  // last_notified_at 一併清空：它記錄的是「本週期是否已通知」，換新之後
+  // 週期重新起算，舊的通知紀錄就不再適用了。
   await env.DB.prepare(
-    "UPDATE parts SET last_replaced_at = ?, updated_at = ? WHERE id = ?",
+    "UPDATE parts SET last_replaced_at = ?, last_notified_at = NULL, updated_at = ? WHERE id = ?",
   )
     .bind(today, Date.now(), partId)
     .run();

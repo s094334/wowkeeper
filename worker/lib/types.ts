@@ -25,6 +25,8 @@ export type PartRow = {
   cycle_months: number;
   action: "replace" | "clean";
   last_replaced_at: string;
+  /** 本週期已寄出逾期通知的日期，YYYY-MM-DD；NULL 代表尚未通知。 */
+  last_notified_at: string | null;
   created_at: number;
   updated_at: number;
 };
