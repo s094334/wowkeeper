@@ -16,11 +16,8 @@
       "database_id": "6de26d2e-0450-4af8-8b8e-e67d244201a6"
     }
   ],
-  // 本機要真的把信送出去時，暫時加上 "remote": true，測完拿掉。
-  // ⚠️ Email Sending 需要 Workers Paid 方案，且網域須先 onboard：
-  //    npx wrangler email sending enable xin-ping.com
-  //    在那之前寄送會失敗（permanent delivery failure），排程會記錄錯誤並在
-  //    下次重試，不會把耗材標記成已通知。
+  // 本機要真的把信送出去時，暫時加上 "remote": true，測完拿掉；
+  // 沒加的話 miniflare 只會模擬，不會真的寄。
   "send_email": [{ "name": "EMAIL" }],
   // cron 用 UTC。01:00 UTC = 台北早上 9 點。
   // 每天跑一次，讓通知的節奏完全由 worker/notifications.ts 的常數決定，
