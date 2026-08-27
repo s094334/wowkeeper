@@ -16,17 +16,7 @@
       "database_id": "6de26d2e-0450-4af8-8b8e-e67d244201a6"
     }
   ],
-  // 本機要真的把信送出去時，暫時加上 "remote": true，測完拿掉；
-  // 沒加的話 miniflare 只會模擬，不會真的寄。
   "send_email": [{ "name": "EMAIL" }],
-  "vars": {
-    // 逾期通知信只會寄給這裡列出的地址，用逗號分隔。
-    // 開放給真實使用者時把值清空（""），就不再限制收件人。
-    "NOTIFY_ALLOWLIST": "s094334@gmail.com,s094334+demo1@gmail.com"
-  },
-  // cron 用 UTC。01:00 UTC = 台北早上 9 點。
-  // 每天跑一次，讓通知的節奏完全由 worker/notifications.ts 的常數決定，
-  // 而不是被排程頻率干擾。
   "triggers": {
     "crons": ["0 1 * * *"]
   },

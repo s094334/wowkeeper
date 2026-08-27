@@ -17,7 +17,7 @@ import { MAIL_FROM, renderDigest } from "./email.js";
 import { findOverdueByUser, markNotified } from "./notifications.js";
 import { authenticate } from "./lib/auth.js";
 import { taipeiToday } from "./lib/date.js";
-import { fail } from "./lib/response.js";
+import { fail, ok } from "./lib/response.js";
 
 const appliancesCollection = new URLPattern({ pathname: "/api/appliances/" });
 const applianceItem = new URLPattern({ pathname: "/api/appliances/:id" });
@@ -37,7 +37,15 @@ async function handle(request: Request, env: Env): Promise<Response> {
   const { method } = request;
 
   if (pathname === "/api/recognise") {
+    const auth = await authenticate(request, env);
+    if (!auth) return fail("辨識失敗", 401);
     return recognise(request, env);
+  }
+
+  if (pathname === "/api/notifications/run" && method === "POST") {
+    const auth = await authenticate(request, env);
+    if (!auth) return fail("執行失敗", 401);
+    return ok(await runDailyNotifications(env));
   }
 
   if (pathname === "/api/users/sign_up" && method === "POST") {
@@ -50,7 +58,6 @@ async function handle(request: Request, env: Env): Promise<Response> {
     return signOut(request, env);
   }
 
-  // 一鍵完成保養：路徑比 /parts/:partId 多一段，要先比對，避免被 partItem 的規則吃掉。
   const renewMatch = partRenew.exec(url);
   if (renewMatch && method === "PATCH") {
     const auth = await authenticate(request, env);
@@ -126,18 +133,6 @@ async function handle(request: Request, env: Env): Promise<Response> {
   return new Response(null, { status: 404 });
 }
 
-/**
- * 每天 01:00 UTC（台北早上 9 點）由 cron 觸發，見 wrangler.jsonc 的 triggers。
- *
- * 寄送成功才呼叫 markNotified()。順序顛倒的話，一旦寄送失敗那次提醒就永久遺失
- * ——耗材還在逾期，系統卻以為已經通知過。失敗時跳過標記，下次排程會重試。
- *
- * 單一使用者寄送失敗不影響其他人，所以錯誤在迴圈內接住而不是往外拋。
- */
-/**
- * 只有名單上的地址收得到信，用來在開發與 demo 期間避免誤寄給真實使用者。
- * NOTIFY_ALLOWLIST 留空代表不限制，正式開放時就是這個設定。
- */
 function allowedRecipients(env: Env): Set<string> | null {
   const raw = env.NOTIFY_ALLOWLIST?.trim();
   if (!raw) return null;
@@ -149,7 +144,14 @@ function allowedRecipients(env: Env): Set<string> | null {
   );
 }
 
-async function runDailyNotifications(env: Env): Promise<void> {
+type NotifyResult = {
+  today: string;
+  sent: number;
+  failed: number;
+  filtered: number;
+};
+
+async function runDailyNotifications(env: Env): Promise<NotifyResult> {
   const today = taipeiToday();
   const allowlist = allowedRecipients(env);
   const all = await findOverdueByUser(env, today);
@@ -158,14 +160,14 @@ async function runDailyNotifications(env: Env): Promise<void> {
     ? all.filter((digest) => allowlist.has(digest.email.toLowerCase()))
     : all;
 
-  const skipped = all.length - digests.length;
-  if (skipped > 0) {
-    console.log(`[notify] 白名單過濾掉 ${skipped} 位收件人`);
+  const filtered = all.length - digests.length;
+  if (filtered > 0) {
+    console.log(`[notify] 白名單過濾掉 ${filtered} 位收件人`);
   }
 
   if (digests.length === 0) {
     console.log(`[notify] ${today} 沒有需要通知的項目`);
-    return;
+    return { today, sent: 0, failed: 0, filtered };
   }
 
   let sent = 0;
@@ -196,6 +198,7 @@ async function runDailyNotifications(env: Env): Promise<void> {
   }
 
   console.log(`[notify] ${today} 寄出 ${sent}/${digests.length} 封`);
+  return { today, sent, failed: digests.length - sent, filtered };
 }
 
 export default {
@@ -209,7 +212,6 @@ export default {
   },
 
   async scheduled(_controller, env, ctx) {
-    // waitUntil 讓 worker 等這個 promise 結束才回收，否則排程可能在寄完之前就被中斷。
     ctx.waitUntil(
       runDailyNotifications(env).catch((error: unknown) => {
         console.error("[notify] 排程執行失敗", error);

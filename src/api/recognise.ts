@@ -1,5 +1,6 @@
 import type { ApplianceCategory } from "../types/appliance";
 import { compressImage } from "../lib/compressImage";
+import { getToken } from "../lib/authStorage";
 
 export type RecogniseResult = {
   brand: string | null;
@@ -11,9 +12,16 @@ export type RecogniseResult = {
 export async function recogniseNameplate(file: File): Promise<RecogniseResult> {
   const image = await compressImage(file);
 
+  // 這支送的是原始圖片位元組、不是 JSON，所以沒有走 axios，也就沒有
+  // src/api/system.ts 那個自動補 token 的攔截器，要自己帶。
+  const token = getToken();
+
   const response = await fetch("/api/recognise", {
     method: "POST",
-    headers: { "Content-Type": "image/jpeg" },
+    headers: {
+      "Content-Type": "image/jpeg",
+      ...(token ? { authorization: token } : {}),
+    },
     body: image,
   });
 
