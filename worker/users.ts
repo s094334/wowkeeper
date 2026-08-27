@@ -15,6 +15,23 @@ function isNonEmptyString(value: unknown): value is string {
   return typeof value === "string" && value.trim().length > 0;
 }
 
+/**
+ * 只有名單上的 email 能註冊。留空則不限制，正式開放時就是留空。
+ *
+ * 走 secret 而不是 wrangler.jsonc 的 vars：註冊時不驗證 email 所有權，所以
+ * 這份名單一旦公開，任何人看到名單就能拿上面的地址去註冊。名單本身即是門檻。
+ */
+function signupAllowlist(env: Env): Set<string> | null {
+  const raw = env.SIGNUP_ALLOWLIST?.trim();
+  if (!raw) return null;
+  return new Set(
+    raw
+      .split(",")
+      .map((email) => email.trim().toLowerCase())
+      .filter(Boolean),
+  );
+}
+
 async function readJson(
   request: Request,
 ): Promise<Record<string, unknown> | null> {
@@ -48,6 +65,13 @@ export async function signUp(request: Request, env: Env): Promise<Response> {
   const normalizedEmail = email.trim().toLowerCase();
   if (!EMAIL_PATTERN.test(normalizedEmail)) {
     return fail("欄位驗證失敗");
+  }
+
+  // 回 403 而不是 400：讓被擋下的人知道是「不開放」，不是自己填錯。
+  // 訊息不透露名單內容，也不區分「不在名單上」與其他失敗。
+  const allowlist = signupAllowlist(env);
+  if (allowlist && !allowlist.has(normalizedEmail)) {
+    return fail("目前未開放註冊", 403);
   }
 
   const existing = await env.DB.prepare("SELECT id FROM users WHERE email = ?")

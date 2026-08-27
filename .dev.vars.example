@@ -1,1 +1,2 @@
 JWT_SECRET=replace-with-a-long-random-string
+SIGNUP_ALLOWLIST=comma,separated,emails
