@@ -25,5 +25,35 @@
   },
   "upload_source_maps": true,
   "routes": [{ "pattern": "wowkeeper.xin-ping.com", "custom_domain": true }],
-  "preview_urls": true
+  "preview_urls": false,
+  "env": {
+    "dev": {
+      "name": "wowkeeper-app-dev",
+      "assets": {
+        "not_found_handling": "single-page-application"
+      },
+      "ai": {
+        "binding": "AI"
+      },
+      "d1_databases": [
+        {
+          "binding": "DB",
+          "database_name": "wowkeeper-db-dev",
+          "database_id": "afd51117-3d89-41a3-9c4e-caf25f28d3ca"
+        }
+      ],
+      "send_email": [{ "name": "EMAIL" }],
+      "triggers": {
+        "crons": []
+      },
+      "observability": {
+        "enabled": true
+      },
+      "upload_source_maps": true,
+      "routes": [
+        { "pattern": "dev-wowkeeper.xin-ping.com", "custom_domain": true }
+      ],
+      "preview_urls": false
+    }
+  }
 }
