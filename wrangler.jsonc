@@ -51,7 +51,7 @@
       },
       "upload_source_maps": true,
       "routes": [
-        { "pattern": "dev.wowkeeper.xin-ping.com", "custom_domain": true }
+        { "pattern": "dev-wowkeeper.xin-ping.com", "custom_domain": true }
       ],
       "preview_urls": false
     }
