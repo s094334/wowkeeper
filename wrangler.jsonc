@@ -1,0 +1,59 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "wowkeeper-app",
+  "main": "worker/index.ts",
+  "compatibility_date": "2026-08-14",
+  "assets": {
+    "not_found_handling": "single-page-application"
+  },
+  "ai": {
+    "binding": "AI"
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "wowkeeper-db",
+      "database_id": "6de26d2e-0450-4af8-8b8e-e67d244201a6"
+    }
+  ],
+  "send_email": [{ "name": "EMAIL" }],
+  "triggers": {
+    "crons": ["0 1 * * *"]
+  },
+  "observability": {
+    "enabled": true
+  },
+  "upload_source_maps": true,
+  "routes": [{ "pattern": "wowkeeper.xin-ping.com", "custom_domain": true }],
+  "preview_urls": false,
+  "env": {
+    "dev": {
+      "name": "wowkeeper-app-dev",
+      "assets": {
+        "not_found_handling": "single-page-application"
+      },
+      "ai": {
+        "binding": "AI"
+      },
+      "d1_databases": [
+        {
+          "binding": "DB",
+          "database_name": "wowkeeper-db-dev",
+          "database_id": "afd51117-3d89-41a3-9c4e-caf25f28d3ca"
+        }
+      ],
+      "send_email": [{ "name": "EMAIL" }],
+      "triggers": {
+        "crons": []
+      },
+      "observability": {
+        "enabled": true
+      },
+      "upload_source_maps": true,
+      "routes": [
+        { "pattern": "dev-wowkeeper.xin-ping.com", "custom_domain": true }
+      ],
+      "preview_urls": false
+    }
+  }
+}

@@ -1,0 +1,15 @@
+@import "tailwindcss";
+@import "./styles/theme.css";
+
+@layer base {
+  body {
+    background: var(--color-cream-200);
+    color: var(--color-ink);
+  }
+
+  #root {
+    display: flex;
+    min-height: 100dvh;
+    flex-direction: column;
+  }
+}

@@ -1,0 +1,3 @@
+JWT_SECRET=replace-with-a-long-random-string
+SIGNUP_ALLOWLIST=comma,separated,emails
+NOTIFY_ALLOWLIST=comma,separated,emails

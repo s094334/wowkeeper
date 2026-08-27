@@ -1,0 +1,74 @@
+import {
+  DAYS_PER_CYCLE_MONTH,
+  SOON_WITHIN_DAYS,
+  taipeiDayNumber,
+} from "../../shared/maintenance";
+
+const MS_PER_DAY = 24 * 60 * 60 * 1000;
+
+export type LampStatus = "overdue" | "soon" | "ok";
+
+export type PartLike = {
+  name: string;
+  cycleMonths: number;
+  /** YYYY-MM-DD */
+  lastReplacedAt: string;
+};
+
+export type ApplianceStatus = {
+  status: LampStatus;
+  worst: { name: string; daysLeft: number } | null;
+};
+
+function dayNumberOf(dateText: string, plusDays = 0): number {
+  const [year, month, day] = dateText.split("-").map(Number);
+  return Date.UTC(year, month - 1, day + plusDays);
+}
+
+/**
+ * 「今天」固定以台北時間判斷，不使用瀏覽器所在時區。
+ *
+ * 後端排程寄信時也用同一套規則，所以畫面轉紅燈的那天，正好就是提醒信寄出的
+ * 那天。使用者人在國外時，看到的狀態不會跟收到的信對不上。
+ */
+function todayDayNumber(today: Date): number {
+  return taipeiDayNumber(today);
+}
+
+function dueDayNumber(part: PartLike): number {
+  return dayNumberOf(
+    part.lastReplacedAt,
+    part.cycleMonths * DAYS_PER_CYCLE_MONTH,
+  );
+}
+
+export function daysUntilDue(part: PartLike, today: Date = new Date()): number {
+  return Math.round((dueDayNumber(part) - todayDayNumber(today)) / MS_PER_DAY);
+}
+
+export function dueDateOf(part: PartLike): string {
+  return new Date(dueDayNumber(part)).toISOString().slice(0, 10);
+}
+
+export function statusOf(daysLeft: number): LampStatus {
+  if (daysLeft < 0) return "overdue";
+  if (daysLeft <= SOON_WITHIN_DAYS) return "soon";
+  return "ok";
+}
+
+export function computeApplianceStatus(
+  parts: readonly PartLike[],
+  today: Date = new Date(),
+): ApplianceStatus {
+  let worst: { name: string; daysLeft: number } | null = null;
+
+  for (const part of parts) {
+    const daysLeft = daysUntilDue(part, today);
+    if (!worst || daysLeft < worst.daysLeft) {
+      worst = { name: part.name, daysLeft };
+    }
+  }
+
+  if (!worst) return { status: "ok", worst: null };
+  return { status: statusOf(worst.daysLeft), worst };
+}
