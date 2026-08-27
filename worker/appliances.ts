@@ -198,6 +198,7 @@ export async function createAppliance(
     cycle_months: part.cycleMonths,
     action: part.action,
     last_replaced_at: part.lastReplacedAt,
+    last_notified_at: null,
     created_at: now,
     updated_at: now,
   }));

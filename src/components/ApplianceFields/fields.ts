@@ -1,3 +1,4 @@
+import { taipeiToday } from "../../../shared/maintenance";
 import type { ApplianceCategory, ApplianceInput } from "../../types/appliance";
 import type { FieldConfig } from "../../types/form";
 
@@ -17,13 +18,6 @@ export function toApplianceInput(values: ApplianceFormValues): ApplianceInput {
     model: values.model.trim() || undefined,
     purchasedAt: values.purchasedAt || undefined,
   };
-}
-
-function today(): string {
-  const now = new Date();
-  const month = String(now.getMonth() + 1).padStart(2, "0");
-  const day = String(now.getDate()).padStart(2, "0");
-  return `${now.getFullYear()}-${month}-${day}`;
 }
 
 export const fields: FieldConfig<ApplianceFormValues>[] = [
@@ -50,6 +44,6 @@ export const fields: FieldConfig<ApplianceFormValues>[] = [
     label: "購買日期",
     name: "purchasedAt",
     type: "date",
-    max: today(),
+    max: taipeiToday(),
   },
 ];
