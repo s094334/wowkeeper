@@ -11,6 +11,7 @@
     "format:check": "prettier --check .",
     "preview": "npm run build && vite preview",
     "deploy": "npm run build && wrangler deploy",
+    "deploy:dev": "CLOUDFLARE_ENV=dev npm run build && CLOUDFLARE_ENV=dev wrangler deploy",
     "cf-typegen": "wrangler types"
   },
   "dependencies": {
