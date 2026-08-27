@@ -36,7 +36,11 @@ async function handle(request: Request, env: Env): Promise<Response> {
   const { pathname } = url;
   const { method } = request;
 
+  // 需要驗證：每次呼叫都會消耗 Workers AI 額度（每天 10,000 Neurons 免費），
+  // 開放給未登入者的話，任何人都能把當天的額度耗光，真正的使用者就辨識不了。
   if (pathname === "/api/recognise") {
+    const auth = await authenticate(request, env);
+    if (!auth) return fail("辨識失敗", 401);
     return recognise(request, env);
   }
 
