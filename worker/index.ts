@@ -36,21 +36,12 @@ async function handle(request: Request, env: Env): Promise<Response> {
   const { pathname } = url;
   const { method } = request;
 
-  // 需要驗證：每次呼叫都會消耗 Workers AI 額度（每天 10,000 Neurons 免費），
-  // 開放給未登入者的話，任何人都能把當天的額度耗光，真正的使用者就辨識不了。
   if (pathname === "/api/recognise") {
     const auth = await authenticate(request, env);
     if (!auth) return fail("辨識失敗", 401);
     return recognise(request, env);
   }
 
-  // 手動觸發逾期通知，跟 cron 走同一個函式。
-  //
-  // 已部署的 Worker 沒有任何方式能手動觸發排程（Dashboard 與 CLI 都沒有提供），
-  // 只能等每天 01:00 UTC。demo 或排程漏跑時需要立刻補寄，所以開這個入口。
-  //
-  // ⚠️ 它會寄給所有符合條件的使用者，不是只寄給呼叫者。目前由 NOTIFY_ALLOWLIST
-  //    限制實際收件人。
   if (pathname === "/api/notifications/run" && method === "POST") {
     const auth = await authenticate(request, env);
     if (!auth) return fail("執行失敗", 401);
@@ -67,7 +58,6 @@ async function handle(request: Request, env: Env): Promise<Response> {
     return signOut(request, env);
   }
 
-  // 一鍵完成保養：路徑比 /parts/:partId 多一段，要先比對，避免被 partItem 的規則吃掉。
   const renewMatch = partRenew.exec(url);
   if (renewMatch && method === "PATCH") {
     const auth = await authenticate(request, env);
@@ -143,10 +133,6 @@ async function handle(request: Request, env: Env): Promise<Response> {
   return new Response(null, { status: 404 });
 }
 
-/**
- * 只有名單上的地址收得到信，用來在開發與 demo 期間避免誤寄給真實使用者。
- * NOTIFY_ALLOWLIST 留空代表不限制，正式開放時就是這個設定。
- */
 function allowedRecipients(env: Env): Set<string> | null {
   const raw = env.NOTIFY_ALLOWLIST?.trim();
   if (!raw) return null;
@@ -158,7 +144,6 @@ function allowedRecipients(env: Env): Set<string> | null {
   );
 }
 
-/** 執行結果，供手動觸發的端點回報。 */
 type NotifyResult = {
   today: string;
   sent: number;
@@ -166,14 +151,6 @@ type NotifyResult = {
   filtered: number;
 };
 
-/**
- * 由 cron（每天 01:00 UTC，台北早上 9 點）與 POST /api/notifications/run 共用。
- *
- * 寄送成功才呼叫 markNotified()。順序顛倒的話，一旦寄送失敗那次提醒就永久遺失
- * ——耗材還在逾期，系統卻以為已經通知過。失敗時跳過標記，下次執行會重試。
- *
- * 單一使用者寄送失敗不影響其他人，所以錯誤在迴圈內接住而不是往外拋。
- */
 async function runDailyNotifications(env: Env): Promise<NotifyResult> {
   const today = taipeiToday();
   const allowlist = allowedRecipients(env);
@@ -235,7 +212,6 @@ export default {
   },
 
   async scheduled(_controller, env, ctx) {
-    // waitUntil 讓 worker 等這個 promise 結束才回收，否則排程可能在寄完之前就被中斷。
     ctx.waitUntil(
       runDailyNotifications(env).catch((error: unknown) => {
         console.error("[notify] 排程執行失敗", error);
