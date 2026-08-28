@@ -44,7 +44,7 @@ export function ApplianceDetail() {
 
   return (
     <main className={PAGE}>
-      <header className="flex shrink-0 flex-col gap-3.5 px-8 pt-2">
+      <header className="flex shrink-0 flex-col gap-3.5 px-8 pt-5">
         <div className="flex flex-col gap-2 border-cream-500 border-b-2 pb-5">
           <div className="flex items-center justify-between gap-2.5">
             <div className="text-ink-muted flex min-w-0 items-center gap-2 text-xs">
