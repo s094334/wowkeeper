@@ -85,13 +85,6 @@ export function EditAppliance() {
   return (
     <main className={PAGE}>
       <div className="flex items-center gap-2">
-        <button
-          type="button"
-          onClick={() => navigate(-1)}
-          className="text-ink hover:bg-cream-100 -ml-2 flex size-9 shrink-0 cursor-pointer items-center justify-center rounded-full"
-        >
-          <ArrowLeft width={20} height={20} />
-        </button>
         <h1 className="min-w-0 flex-1 text-h1 font-semibold tracking-[-0.02em]">
           編輯家電
         </h1>
@@ -113,13 +106,24 @@ export function EditAppliance() {
           <FormError key={index}>{message}</FormError>
         ))}
 
-        <button
-          type="submit"
-          disabled={isEditing}
-          className="wk-cta w-full cursor-pointer disabled:opacity-60"
-        >
-          {isEditing ? "儲存中…" : "儲存"}
-        </button>
+        <div className="flex gap-2.5">
+          <button
+            type="button"
+            onClick={() => navigate(-1)}
+            className="wk-cta-ghost flex flex-1 cursor-pointer items-center justify-center gap-2"
+          >
+            <ArrowLeft width={16} height={16} />
+            上一頁
+          </button>
+
+          <button
+            type="submit"
+            disabled={isEditing}
+            className="wk-cta flex-1 cursor-pointer disabled:opacity-60"
+          >
+            {isEditing ? "儲存中…" : "儲存"}
+          </button>
+        </div>
       </form>
     </main>
   );
