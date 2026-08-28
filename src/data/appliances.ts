@@ -25,7 +25,7 @@ export const APPLIANCE_ICONS: Record<ApplianceCategory, SvgrComponent> = {
 export const APPLIANCE_CATEGORY_LABELS: Record<ApplianceCategory, string> = {
   aircon: "冷氣 / 空氣清淨機",
   waterPurifier: "淨水器 / 濾水壺",
-  washer: "洗衣機",
+  washer: "洗衣機 / 烘衣機",
   fridge: "冰箱",
   dehumidifier: "除濕機",
   waterHeater: "熱水器",
