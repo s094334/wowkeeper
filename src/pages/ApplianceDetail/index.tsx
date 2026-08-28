@@ -10,7 +10,7 @@ import {
   APPLIANCE_CATEGORY_LABELS,
   APPLIANCE_ICONS,
 } from "../../data/appliances";
-import { GHOST_BUTTON, PAGE } from "./classes";
+import { BOTTOM_BUTTON, GHOST_BUTTON, PAGE } from "./classes";
 
 export function ApplianceDetail() {
   const navigate = useNavigate();
@@ -56,7 +56,7 @@ export function ApplianceDetail() {
 
             <Link
               to={`/appliances/${appliance.id}/edit`}
-              className={GHOST_BUTTON}
+              className={`${GHOST_BUTTON} h-[34px]`}
             >
               <Pencil width={14} height={14} />
               編輯家電
@@ -89,11 +89,11 @@ export function ApplianceDetail() {
 
       <PartList applianceId={appliance.id} parts={parts} />
 
-      <div className="border-cream-400 bg-cream-50 sticky bottom-0 flex shrink-0 gap-2.5 border-t px-5 pt-3.5 pb-[max(1.75rem,env(safe-area-inset-bottom))] sm:px-8">
+      <div className="border-cream-400 bg-cream-50 flex shrink-0 gap-2.5 border-t px-5 pt-3.5 pb-[max(1.75rem,env(safe-area-inset-bottom))] sm:px-8">
         <button
           type="button"
           onClick={() => navigate(-1)}
-          className={`${GHOST_BUTTON} h-11 flex-1 justify-center text-[15px]`}
+          className={BOTTOM_BUTTON}
         >
           <ArrowLeft width={16} height={16} />
           上一頁
@@ -101,7 +101,7 @@ export function ApplianceDetail() {
 
         <Link
           to={`/appliances/${appliance.id}/parts/new`}
-          className="bg-surface text-ink border-cream-400 hover:bg-terracotta hover:border-terracotta hover:text-white flex h-11 flex-1 items-center justify-center gap-2 rounded-sm border text-[15px] font-medium"
+          className={BOTTOM_BUTTON}
         >
           <Plus width={16} height={16} />
           新增耗材

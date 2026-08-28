@@ -38,7 +38,7 @@ export function ApplianceCard(props: ApplianceCardProps) {
         )}
       </div>
 
-      <StatusLamp status={status} className="self-start">
+      <StatusLamp status={status} className="mt-auto self-start">
         {statusText}
       </StatusLamp>
     </Link>

@@ -36,7 +36,7 @@ export function PartCard(props: PartCardProps) {
 
         <Link
           to={`/appliances/${applianceId}/parts/${part.id}/edit`}
-          className={GHOST_BUTTON}
+          className={`${GHOST_BUTTON} h-[34px]`}
         >
           <Pencil width={14} height={14} />
           編輯耗材
