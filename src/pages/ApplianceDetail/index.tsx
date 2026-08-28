@@ -20,7 +20,7 @@ export function ApplianceDetail() {
   if (isLoading) {
     return (
       <main className={PAGE}>
-        <p className="text-ink-muted px-5 pt-6 text-xs sm:px-8">載入中…</p>
+        <p className="text-ink-muted px-8 pt-6 text-xs">載入中…</p>
       </main>
     );
   }
@@ -32,7 +32,7 @@ export function ApplianceDetail() {
   if (!appliance) {
     return (
       <main className={PAGE}>
-        <div className="px-5 pt-6 sm:px-8">
+        <div className="px-8 pt-6">
           <FormError>{errorLog[0] ?? "發生錯誤，請稍後再試"}</FormError>
         </div>
       </main>
@@ -44,8 +44,8 @@ export function ApplianceDetail() {
 
   return (
     <main className={PAGE}>
-      <header className="border-cream-400 flex shrink-0 flex-col gap-3.5 border-b px-5 pt-2 pb-[18px] sm:px-8">
-        <div className="flex flex-col gap-2">
+      <header className="flex shrink-0 flex-col gap-3.5 px-8 pt-2">
+        <div className="flex flex-col gap-2 border-cream-500 border-b-2 pb-5">
           <div className="flex items-center justify-between gap-2.5">
             <div className="text-ink-muted flex min-w-0 items-center gap-2 text-xs">
               <Icon width={15} height={15} className="shrink-0" />
@@ -89,7 +89,7 @@ export function ApplianceDetail() {
 
       <PartList applianceId={appliance.id} parts={parts} />
 
-      <div className="border-cream-400 bg-cream-50 flex shrink-0 gap-2.5 border-t px-5 pt-3.5 pb-[max(1.75rem,env(safe-area-inset-bottom))] sm:px-8">
+      <div className="border-cream-400 bg-cream-50 flex shrink-0 gap-2.5 border-t px-8 pt-3.5 pb-[max(1.75rem,env(safe-area-inset-bottom))]">
         <button
           type="button"
           onClick={() => navigate(-1)}

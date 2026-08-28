@@ -13,7 +13,7 @@ export function PartList(props: PartListProps) {
   const items = withPartStatus(parts);
 
   return (
-    <section className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto px-5 py-4 sm:px-8">
+    <section className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto px-8 py-4">
       <div className="flex items-baseline justify-between">
         <h2 className="text-ink-muted text-[13px] font-medium">耗材更換</h2>
         {parts.length > 0 && (
