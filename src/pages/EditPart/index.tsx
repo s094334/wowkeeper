@@ -23,8 +23,10 @@ export function EditPart() {
   const {
     editPart,
     removePart,
+    renewPart,
     isEditing,
     isRemoving,
+    isRenewing,
     errorLog: mutationErrors,
   } = usePartMutations(id);
 
@@ -64,6 +66,8 @@ export function EditPart() {
   if (!part) {
     return <ApplianceNotFound />;
   }
+
+  const verb = part.action === "clean" ? "清洗" : "更換";
 
   const backToAppliance = () =>
     navigate(`/appliances/${appliance.id}`, { replace: true });
@@ -115,13 +119,26 @@ export function EditPart() {
           <FormError key={index}>{message}</FormError>
         ))}
 
-        <button
-          type="submit"
-          disabled={isEditing}
-          className="wk-cta w-full cursor-pointer disabled:opacity-60"
-        >
-          {isEditing ? "儲存中…" : "儲存"}
-        </button>
+        <div className="flex flex-col gap-3">
+          <button
+            type="submit"
+            disabled={isEditing}
+            className="wk-cta w-full cursor-pointer disabled:opacity-60"
+          >
+            {isEditing ? "儲存中…" : "儲存"}
+          </button>
+
+          {/* 登記已更換：把上次更換日設成今天，週期重新起算。
+              它不是表單的一部分，所以放在 submit 之外、用 type="button"。 */}
+          <button
+            type="button"
+            onClick={() => renewPart(part.id, { onSuccess: backToAppliance })}
+            disabled={isRenewing}
+            className="border-cream-400 bg-surface hover:bg-cream-100 hover:border-cream-600 h-12 w-full cursor-pointer rounded-md border text-[15px] font-medium disabled:opacity-60"
+          >
+            {isRenewing ? "登記中…" : `登記已${verb}`}
+          </button>
+        </div>
       </form>
     </main>
   );

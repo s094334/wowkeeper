@@ -20,6 +20,12 @@
   --color-terracotta-hover: #9c5432;
   --color-terracotta-tint: #f1e6da;
 
+  /* ---- 主要動作（琥珀）----
+     家電詳情的「新增耗材」使用。與 terracotta 不同色，
+     hover 色與 --color-lamp-amber-fg 相同。 */
+  --color-primary: #b46906;
+  --color-primary-hover: #975102;
+
   /* ---- 狀態燈號（紅／黃／綠）---- */
   --color-lamp-red: #c00f0c;
   --color-lamp-red-bg: #fee9e7;
