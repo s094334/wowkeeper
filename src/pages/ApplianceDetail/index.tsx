@@ -62,19 +62,18 @@ export function ApplianceDetail() {
               編輯家電
             </Link>
           </div>
-
+          {brand && (
+            <p className="text-ink-muted text-sm leading-[1.5] ml-1 font-bold">
+              {brand}
+            </p>
+          )}{" "}
           <h1 className="text-h1 leading-[1.3] font-semibold tracking-[-0.02em] text-pretty">
             {name}
           </h1>
-
-          {brand && (
-            <p className="text-ink-muted text-sm leading-[1.5]">{brand}</p>
-          )}
-
           {(model || purchasedAt) && (
             <div className="mt-1 flex flex-wrap items-center gap-2">
               {model && (
-                <span className="border-cream-400 bg-cream-100 rounded-xs border px-2.5 py-[5px] text-sm font-medium tracking-[-0.01em] break-all">
+                <span className="border-cream-400 bg-surface rounded-xs border px-2.5 py-[5px] text-sm font-medium tracking-[-0.01em] break-all">
                   {model}
                 </span>
               )}
@@ -102,7 +101,7 @@ export function ApplianceDetail() {
 
         <Link
           to={`/appliances/${appliance.id}/parts/new`}
-          className="bg-primary hover:bg-primary-hover flex h-11 flex-1 items-center justify-center gap-[7px] rounded-xs text-[15px] font-semibold text-white"
+          className="bg-surface text-ink border-cream-400 hover:bg-terracotta hover:border-terracotta hover:text-white flex h-11 flex-1 items-center justify-center gap-2 rounded-sm border text-[15px] font-medium"
         >
           <Plus width={16} height={16} />
           新增耗材
