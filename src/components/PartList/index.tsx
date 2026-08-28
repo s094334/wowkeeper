@@ -1,6 +1,4 @@
-import { Link } from "react-router";
 import type { Part } from "../../types/appliance";
-import Plus from "../../assets/icons/Plus.svg?react";
 import { withPartStatus } from "../../lib/applianceStatus";
 import { PartCard } from "../PartCard";
 
@@ -15,31 +13,29 @@ export function PartList(props: PartListProps) {
   const items = withPartStatus(parts);
 
   return (
-    <section className="flex flex-1 flex-col gap-3 px-5 py-4 sm:px-8">
+    <section className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto px-8 py-4">
       <div className="flex items-baseline justify-between">
-        <h2 className="text-ink-muted text-sm font-medium">耗材更換</h2>
+        <h2 className="text-ink-muted text-[13px] font-medium">耗材更換</h2>
         {parts.length > 0 && (
-          <span className="text-cream-800 text-sm">{parts.length} 項</span>
+          <span className="text-cream-800 text-[13px]">{parts.length} 項</span>
         )}
       </div>
 
-      {items.map((item) => (
-        <PartCard
-          key={item.part.id}
-          applianceId={applianceId}
-          part={item.part}
-          status={item.status}
-          statusText={item.statusText}
-        />
-      ))}
-
-      <Link
-        to={`/appliances/${applianceId}/parts/new`}
-        className="border-cream-500 text-ink-muted hover:bg-cream-100 hover:border-cream-800 hover:text-ink flex items-center justify-center gap-2 rounded-sm border border-dashed p-3 text-sm font-medium"
-      >
-        <Plus width={16} height={16} />
-        新增耗材
-      </Link>
+      {items.length === 0 ? (
+        <p className="border-cream-500 text-ink-muted rounded-sm border border-dashed p-3 text-center text-sm">
+          還沒有登記耗材，從下面的「新增耗材」開始。
+        </p>
+      ) : (
+        items.map((item) => (
+          <PartCard
+            key={item.part.id}
+            applianceId={applianceId}
+            part={item.part}
+            status={item.status}
+            statusText={item.statusText}
+          />
+        ))
+      )}
     </section>
   );
 }

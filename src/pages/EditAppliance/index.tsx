@@ -1,6 +1,7 @@
 import { useForm, type SubmitHandler } from "react-hook-form";
 import { useNavigate, useParams } from "react-router";
 import ArrowLeft from "../../assets/icons/ArrowLeft.svg?react";
+import Trash from "../../assets/icons/Trash.svg?react";
 import { ApplianceFields } from "../../components/ApplianceFields";
 import {
   toApplianceInput,
@@ -19,7 +20,9 @@ export function EditAppliance() {
   const { appliance, isLoading, isNotFound, errorLog } = useAppliance(id);
   const {
     editAppliance,
+    removeAppliance,
     isEditing,
+    isRemoving,
     errorLog: mutationErrors,
   } = useApplianceMutations();
 
@@ -68,17 +71,32 @@ export function EditAppliance() {
     );
   };
 
+  const handleDelete = () => {
+    const confirmed = window.confirm(
+      `確定要刪除「${appliance.name}」嗎？底下的 ${appliance.parts.length} 項耗材也會一起刪除。`,
+    );
+    if (!confirmed) return;
+
+    removeAppliance(appliance.id, {
+      onSuccess: () => navigate("/", { replace: true }),
+    });
+  };
+
   return (
     <main className={PAGE}>
       <div className="flex items-center gap-2">
+        <h1 className="min-w-0 flex-1 text-h1 font-semibold tracking-[-0.02em]">
+          編輯家電
+        </h1>
         <button
           type="button"
-          onClick={() => navigate(-1)}
-          className="text-ink hover:bg-cream-100 -ml-2 flex size-9 shrink-0 cursor-pointer items-center justify-center rounded-full"
+          onClick={handleDelete}
+          disabled={isRemoving}
+          aria-label="刪除家電"
+          className="text-danger hover:bg-lamp-red-bg -mr-1.5 flex size-9 shrink-0 cursor-pointer items-center justify-center rounded-full disabled:opacity-50"
         >
-          <ArrowLeft width={20} height={20} />
+          <Trash width={18} height={18} />
         </button>
-        <h1 className="text-h1 font-semibold tracking-[-0.02em]">編輯家電</h1>
       </div>
 
       <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-6">
@@ -88,13 +106,24 @@ export function EditAppliance() {
           <FormError key={index}>{message}</FormError>
         ))}
 
-        <button
-          type="submit"
-          disabled={isEditing}
-          className="wk-cta w-full cursor-pointer disabled:opacity-60"
-        >
-          {isEditing ? "儲存中…" : "儲存"}
-        </button>
+        <div className="flex gap-2.5">
+          <button
+            type="button"
+            onClick={() => navigate(-1)}
+            className="wk-cta-ghost flex flex-1 cursor-pointer items-center justify-center gap-2"
+          >
+            <ArrowLeft width={16} height={16} />
+            上一頁
+          </button>
+
+          <button
+            type="submit"
+            disabled={isEditing}
+            className="wk-cta flex-1 cursor-pointer disabled:opacity-60"
+          >
+            {isEditing ? "儲存中…" : "儲存"}
+          </button>
+        </div>
       </form>
     </main>
   );
