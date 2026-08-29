@@ -89,7 +89,7 @@ export function ApplianceDetail() {
 
       <PartList applianceId={appliance.id} parts={parts} />
 
-      <div className="border-cream-400 bg-cream-50 flex shrink-0 gap-2.5 border-t px-8 pt-3.5 pb-[max(1.75rem,env(safe-area-inset-bottom))]">
+      <div className="border-cream-400 bg-cream-200 flex shrink-0 gap-2.5 border-t px-8 pt-3.5 pb-[max(1.75rem,env(safe-area-inset-bottom))]">
         <button
           type="button"
           onClick={() => navigate(-1)}
