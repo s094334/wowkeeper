@@ -4,7 +4,7 @@ import X from "../../assets/icons/X.svg?react";
 import { PartFields } from "../../components/PartFields";
 import type { PartFormValues } from "../../components/PartFields/fields";
 import { usePartForm } from "../../components/PartFields/usePartForm";
-import { GHOST_BUTTON, PRIMARY_BUTTON } from "./classes";
+import AlertCircle from "../../assets/icons/AlertCircle.svg?react";
 
 type PartsStepProps = {
   applianceName: string;
@@ -28,7 +28,10 @@ export function PartsStep(props: PartsStepProps) {
   return (
     <div className="flex flex-1 flex-col gap-4 overflow-y-auto px-5 pt-4 pb-2 sm:px-8">
       <p className="text-ink-muted text-xs">{applianceName || "這台家電"}</p>
-
+      <div className="text-cream-800 flex items-start gap-2 px-1 pb-1 text-xs leading-relaxed">
+        <AlertCircle width={14} height={14} className="mt-0.5 shrink-0" />
+        <span>設定好週期，到期哇會寄信提醒你</span>
+      </div>
       {parts.map((part, index) => (
         <div
           key={`${part.name}-${index}`}
@@ -52,24 +55,28 @@ export function PartsStep(props: PartsStepProps) {
       ))}
 
       {addingPart ? (
-        <div className="flex flex-col gap-3">
-          <PartFields
-            register={partForm.register}
-            errors={partForm.formState.errors}
-          />
-          <div className="flex gap-2.5">
-            <button
-              type="button"
-              onClick={() => setAddingPart(false)}
-              className={GHOST_BUTTON}
-            >
-              取消
-            </button>
-            <button type="button" onClick={addPart} className={PRIMARY_BUTTON}>
-              加入
-            </button>
-          </div>
-        </div>
+        <PartFields
+          register={partForm.register}
+          errors={partForm.formState.errors}
+          footer={
+            <div className="flex items-center justify-end gap-1">
+              <button
+                type="button"
+                onClick={() => setAddingPart(false)}
+                className="text-ink-muted hover:text-ink cursor-pointer rounded-xs px-3 py-2.5 text-sm font-medium"
+              >
+                取消
+              </button>
+              <button
+                type="button"
+                onClick={addPart}
+                className="bg-terracotta-tint hover:bg-terracotta-tint-hover text-terracotta cursor-pointer rounded-sm px-4 py-2.5 text-sm font-semibold whitespace-nowrap"
+              >
+                加入這項耗材
+              </button>
+            </div>
+          }
+        />
       ) : (
         <button
           type="button"
