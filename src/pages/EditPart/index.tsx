@@ -23,8 +23,10 @@ export function EditPart() {
   const {
     editPart,
     removePart,
+    renewPart,
     isEditing,
     isRemoving,
+    isRenewing,
     errorLog: mutationErrors,
   } = usePartMutations(id);
 
@@ -65,6 +67,8 @@ export function EditPart() {
     return <ApplianceNotFound />;
   }
 
+  const verb = part.action === "clean" ? "清洗" : "更換";
+
   const backToAppliance = () =>
     navigate(`/appliances/${appliance.id}`, { replace: true });
 
@@ -87,13 +91,6 @@ export function EditPart() {
   return (
     <main className={PAGE}>
       <div className="flex items-center gap-2">
-        <button
-          type="button"
-          onClick={() => navigate(-1)}
-          className="text-ink hover:bg-cream-100 -ml-2 flex size-9 shrink-0 cursor-pointer items-center justify-center rounded-full"
-        >
-          <ArrowLeft width={20} height={20} />
-        </button>
         <div className="min-w-0 flex-1">
           <h1 className="text-h1 font-semibold tracking-[-0.02em]">編輯耗材</h1>
           <p className="text-ink-muted truncate text-h3">{appliance.name}</p>
@@ -115,13 +112,37 @@ export function EditPart() {
           <FormError key={index}>{message}</FormError>
         ))}
 
-        <button
-          type="submit"
-          disabled={isEditing}
-          className="wk-cta w-full cursor-pointer disabled:opacity-60"
-        >
-          {isEditing ? "儲存中…" : "儲存"}
-        </button>
+        <div className="flex flex-col gap-3">
+          {/* 登記已更換：把上次更換日設成今天，週期重新起算。
+              它不是表單的一部分，所以放在 submit 之外、用 type="button"。 */}
+          <button
+            type="button"
+            onClick={() => renewPart(part.id, { onSuccess: backToAppliance })}
+            disabled={isRenewing}
+            className="border-cream-400 bg-surface hover:bg-cream-100 hover:border-cream-600 h-12 w-full cursor-pointer rounded-md border text-[15px] font-medium disabled:opacity-60"
+          >
+            {isRenewing ? "登記中…" : `登記已${verb}`}
+          </button>
+
+          <div className="flex gap-2.5">
+            <button
+              type="button"
+              onClick={() => navigate(-1)}
+              className="wk-cta-ghost flex flex-1 cursor-pointer items-center justify-center gap-2"
+            >
+              <ArrowLeft width={16} height={16} />
+              上一頁
+            </button>
+
+            <button
+              type="submit"
+              disabled={isEditing}
+              className="wk-cta flex-1 cursor-pointer disabled:opacity-60"
+            >
+              {isEditing ? "儲存中…" : "儲存"}
+            </button>
+          </div>
+        </div>
       </form>
     </main>
   );

@@ -19,6 +19,7 @@
   --color-terracotta: #b4653f;
   --color-terracotta-hover: #9c5432;
   --color-terracotta-tint: #f1e6da;
+  --color-terracotta-tint-hover: #e8d8c7;
 
   /* ---- 狀態燈號（紅／黃／綠）---- */
   --color-lamp-red: #c00f0c;
@@ -91,6 +92,21 @@
   }
   .wk-cta:hover {
     background: var(--color-terracotta-hover);
+  }
+
+  /* 與 wk-cta 等高等圓角的外框版，用在「上一頁」這種次要動作，
+     兩顆並排時高度才會齊。 */
+  .wk-cta-ghost {
+    background: var(--color-surface);
+    color: var(--color-ink);
+    border: 1px solid var(--color-cream-400);
+    border-radius: var(--radius-lg);
+    height: 50px;
+    font-weight: 500;
+  }
+  .wk-cta-ghost:hover {
+    background: var(--color-cream-100);
+    border-color: var(--color-cream-600);
   }
 
   /* 燈號膠囊：圓點 + 文字 */
