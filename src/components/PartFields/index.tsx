@@ -24,7 +24,7 @@ export function PartFields(props: PartFieldsProps) {
       ))}
 
       <div className="flex flex-col gap-1.5">
-        <span className="text-ink-muted text-xs font-medium">處理方式</span>
+        <span className="text-ink-muted text-body font-medium">處理方式</span>
         <div className="bg-cream-200 flex gap-1 rounded-md p-1">
           {Object.entries(ACTION_LABELS).map(([value, label]) => (
             <label

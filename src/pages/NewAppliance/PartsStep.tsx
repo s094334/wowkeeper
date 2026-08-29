@@ -28,10 +28,6 @@ export function PartsStep(props: PartsStepProps) {
   return (
     <div className="flex flex-1 flex-col gap-4 overflow-y-auto px-5 pt-4 pb-2 sm:px-8">
       <p className="text-ink-muted text-xs">{applianceName || "這台家電"}</p>
-      <div className="text-cream-800 flex items-start gap-2 px-1 pb-1 text-xs leading-relaxed">
-        <AlertCircle width={14} height={14} className="mt-0.5 shrink-0" />
-        <span>設定好週期，到期哇會寄信提醒你</span>
-      </div>
       {parts.map((part, index) => (
         <div
           key={`${part.name}-${index}`}
@@ -53,7 +49,6 @@ export function PartsStep(props: PartsStepProps) {
           </button>
         </div>
       ))}
-
       {addingPart ? (
         <PartFields
           register={partForm.register}
@@ -87,10 +82,16 @@ export function PartsStep(props: PartsStepProps) {
           新增耗材週期
         </button>
       )}
-
-      <p className="text-cream-800 text-xs leading-relaxed text-pretty">
-        沒有耗材也可以直接完成建檔，之後在家電詳情再補上。
-      </p>
+      <div>
+        <div className="text-cream-800 flex items-start gap-2 px-1 pb-1 text-xs leading-relaxed">
+          <AlertCircle width={14} height={14} className="mt-0.5 shrink-0" />
+          <span>設定好週期，到期哇會寄信提醒你</span>
+        </div>
+        <div className="text-cream-800 flex items-start gap-2 px-1 pb-1 text-xs leading-relaxed">
+          <AlertCircle width={14} height={14} className="mt-0.5 shrink-0" />
+          <span>沒有耗材也可以直接完成建檔，之後在家電詳情再補上</span>
+        </div>
+      </div>
     </div>
   );
 }
