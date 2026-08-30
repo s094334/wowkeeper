@@ -108,7 +108,7 @@ function renderCard(part: OverduePart): string {
         </tr>
         <tr>
           <td align="center">
-            <a href="${href}" style="display:inline-block;padding:4px 0 2px;border-bottom:2px solid ${C.ink};font-size:14px;font-weight:600;color:${C.ink};text-decoration:none;">完成保養 &rarr;</a>
+            <a href="${href}" style="display:inline-block;padding:4px 0 2px;border-bottom:2px solid ${C.ink};font-size:14px;font-weight:600;color:${C.ink};text-decoration:none;">登記已更換 &rarr;</a>
           </td>
         </tr>
       </table>
@@ -126,14 +126,14 @@ export function renderDigest(digest: UserDigest): RenderedEmail {
   const text = [
     `${nickname} 您好，`,
     ``,
-    `以下項目該保養了：`,
+    `以下項目該處理了：`,
     ``,
     ...parts.map(
       (part) =>
-        `  ・${part.applianceName} — ${part.partName}（該${ACTION_LABELS[part.action]}）｜${statusText(part)}\n    完成保養：${withUtm(`/appliances/${part.applianceId}/parts/${part.partId}/edit`, "renew")}`,
+        `  ・${part.applianceName} — ${part.partName}（該${ACTION_LABELS[part.action]}）｜${statusText(part)}\n    處理完成：${withUtm(`/appliances/${part.applianceId}/parts/${part.partId}/edit`, "renew")}`,
     ),
     ``,
-    `處理完之後，到 WowKeeper 按一下「完成保養」，週期就會重新開始。`,
+    `處理完之後，到 WowKeeper 按一下「登記已更換」，週期就會重新開始。`,
     withUtm("/", "cta"),
     ``,
     `— WowKeeper — 型號一秒查，濾網隨時換`,
@@ -192,7 +192,7 @@ export function renderDigest(digest: UserDigest): RenderedEmail {
                     <tr>
                       <td align="left" style="padding:10px 20px;font-size:15px;line-height:1.7;color:${C.ink};text-align:left;">
                         ${escapeHtml(nickname)} 您好，
-                        <div style="color:${C.inkMuted};padding-top:8px;">以下項目該保養了：</div>
+                        <div style="color:${C.inkMuted};padding-top:8px;">以下項目該處理了：</div>
                       </td>
                     </tr>
                   </table>
@@ -202,7 +202,7 @@ export function renderDigest(digest: UserDigest): RenderedEmail {
                   <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
                     <tr>
                       <td align="center" style="padding:4px 0 20px;font-size:14px;line-height:1.7;color:${C.inkMuted};">
-                        處理完之後，到 WowKeeper 按一下「完成保養」，週期就會重新開始。
+                        處理完之後，到 WowKeeper 按一下「登記已更換」，週期就會重新開始。
                       </td>
                     </tr>
                     <tr>
