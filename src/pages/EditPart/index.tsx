@@ -113,8 +113,6 @@ export function EditPart() {
         ))}
 
         <div className="flex flex-col gap-3">
-          {/* 登記已更換：把上次更換日設成今天，週期重新起算。
-              它不是表單的一部分，所以放在 submit 之外、用 type="button"。 */}
           <button
             type="button"
             onClick={() => renewPart(part.id, { onSuccess: backToAppliance })}
