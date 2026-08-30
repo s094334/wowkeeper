@@ -1,73 +1,46 @@
-# React + TypeScript + Vite
+# 哇管家 WowKeeper
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+<img width="1200" height="630" alt="og" src="https://github.com/user-attachments/assets/149ebb42-fcf2-4962-a0ac-97cbbaeac0fe" />
 
-Currently, two official plugins are available:
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## 家電耗材管理系統
+網址：https://wowkeeper.xin-ping.com/login
 
-## React Compiler
+>型號一秒查，濾網準時換。
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
 
-## Expanding the ESLint configuration
+## 功能介紹
+1. 拍照自動辨識家電
+- 拍一張家電的銘牌、說明書等等，交給 AI 讀出類別、品牌、型號
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+2. 三步驟新增家電
+- 拍照 → 確認資料 → 設定耗材
 
-```js
-export default defineConfig([
-  globalIgnores(["dist"]),
-  {
-    files: ["**/*.{ts,tsx}"],
-    extends: [
-      // Other configs...
+3. 耗材週期管理
+- 每台家電可登記多項耗材，各自設定「更換或清潔週期」
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+4. 紅黃綠燈號
+- 設置三種顏色燈號（綠色正常、黃色快到期、紅色已逾期），並在首頁顯示全部、逾期或快到期的家電及該數量
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ["./tsconfig.node.json", "./tsconfig.app.json"],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-]);
-```
+5. 耗材快到期提醒
+- 系統每天早上九點掃描，把到期的項目彙整成一封信寄給你
+- 到期前 15 天、7 天，跟逾期後各提醒一次
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## 開發環境與技術
+### 前端
+1. TypeScript、Tailwind
+2. React、Vite
+3. Cloudflare Workers
 
-```js
-// eslint.config.js
-import reactX from "eslint-plugin-react-x";
-import reactDom from "eslint-plugin-react-dom";
+### 後端
+1. TypeScript
+2. Cloudflare Worker
+3. 資料庫 D1（SQLite）
 
-export default defineConfig([
-  globalIgnores(["dist"]),
-  {
-    files: ["**/*.{ts,tsx}"],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs["recommended-typescript"],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ["./tsconfig.node.json", "./tsconfig.app.json"],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-]);
-```
+### 雲端服務
+1. 圖片辨識： Cloudflare Workers AI（Llama 4 Scout）
+2. 提醒信：Cloudflare Email Service（Email Sending）
+3. 每日排程：Cloudflare Workers Cron Triggers
+4. 網域：Cloudflare Registrar
+
+
