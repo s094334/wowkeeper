@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="1200" height="630">
+  <!-- 底色：theme 的 cream-50 -->
+  <rect width="1200" height="630" fill="#fbf8f3" />
+
+  <!-- 右側裝飾圓：terracotta-tint，低調不搶字 -->
+  <circle cx="1080" cy="150" r="260" fill="#f1e6da" />
+  <circle cx="1010" cy="560" r="150" fill="#f1e6da" />
+
+  <!-- 品牌 logo：直接使用 src/assets/icons/WowkeeperLogo.svg 的內容 -->
+  <svg x="96" y="120" width="112" height="112" viewBox="0 0 46 46" fill="none">
+    <rect width="46" height="46" rx="12" fill="rgb(180,105,6)" />
+    <g transform="translate(10.000000000000002 10.000000000000002) scale(1.0833333333333333)">
+      <path d="M18.9 5.9A9.2 9.2 0 1 0 12 21.2 9.2 9.2 0 0 0 21.2 12" stroke="#FBF8F3" stroke-width="1.6" stroke-linecap="round" />
+      <path d="M7.5 12.4 12 8.6l4.5 3.8" stroke="#FBF8F3" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" />
+      <path d="M9 13.8v3.6h6v-3.6" stroke="#FBF8F3" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" />
+      <circle cx="20.4" cy="3.6" r="2.4" fill="#ffffff" />
+    </g>
+  </svg>
+
+  <!-- 主標 -->
+  <text
+    x="96"
+    y="336"
+    font-family="'Noto Sans TC', Inter, system-ui, sans-serif"
+    font-size="82"
+    font-weight="600"
+    letter-spacing="-1"
+    fill="#2b2622"
+  >哇管家 WowKeeper</text>
+
+  <!-- 副標 -->
+  <text
+    x="96"
+    y="416"
+    font-family="'Noto Sans TC', Inter, system-ui, sans-serif"
+    font-size="40"
+    font-weight="400"
+    fill="#7a6e63"
+  >型號一秒查，濾網準時換。</text>
+
+  <!-- 狀態燈號：呼應 app 內的紅／黃／綠 -->
+  <g transform="translate(96, 502)">
+    <circle cx="11" cy="11" r="11" fill="#c00f0c" />
+    <circle cx="53" cy="11" r="11" fill="#e5a000" />
+    <circle cx="95" cy="11" r="11" fill="#009951" />
+    <text
+      x="132"
+      y="21"
+      font-family="'Noto Sans TC', Inter, system-ui, sans-serif"
+      font-size="27"
+      font-weight="400"
+      fill="#a2968a"
+    >該換該洗，自動提醒</text>
+  </g>
+</svg>
