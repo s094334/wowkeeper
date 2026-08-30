@@ -83,7 +83,6 @@ export type CreatePartResponse = {
   newPart: Part;
 };
 
-/** 更新、刪除與一鍵保養只回訊息，沒有資料。 */
 export type PartMessageResponse = {
   status: boolean;
   message: string;
