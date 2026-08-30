@@ -10,6 +10,7 @@ export const NOTIFY_MIN_GAP_DAYS = 3;
 export type NotifyStage = "soon" | "due" | "overdue";
 
 export type OverduePart = {
+  applianceId: string;
   partId: string;
   partName: string;
   applianceName: string;
@@ -27,6 +28,7 @@ export type UserDigest = {
 };
 
 type OverdueRow = {
+  appliance_id: string;
   user_id: string;
   email: string;
   nickname: string;
@@ -54,6 +56,7 @@ const OVERDUE_SQL = `
     users.id AS user_id,
     users.email,
     users.nickname,
+    appliances.id AS appliance_id,
     appliances.name AS appliance_name,
     parts.id AS part_id,
     parts.name AS part_name,
@@ -104,6 +107,7 @@ export async function findOverdueByUser(
     }
 
     digest.parts.push({
+      applianceId: row.appliance_id,
       partId: row.part_id,
       partName: row.part_name,
       applianceName: row.appliance_name,
