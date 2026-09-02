@@ -9,7 +9,7 @@ import {
   toPartInput,
   type PartFormValues,
 } from "../../components/PartFields/fields";
-import { usePartForm } from "../../components/PartFields/usePartForm";
+import { usePartForm } from "../../hooks/usePartForm";
 import { useAppliance } from "../../hooks/useAppliances";
 import { usePartMutations } from "../../hooks/useParts";
 
