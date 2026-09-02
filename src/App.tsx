@@ -9,7 +9,6 @@ import { Home } from "./pages/Home";
 import { Login } from "./pages/Login";
 import { NewAppliance } from "./pages/NewAppliance";
 import { Register } from "./pages/Register";
-import "./App.css";
 
 function App() {
   return (

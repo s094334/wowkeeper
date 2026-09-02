@@ -1,6 +1,8 @@
+import axios from "axios";
 import type { ApplianceCategory } from "../types/appliance";
 import { compressImage } from "../lib/compressImage";
-import { getToken } from "../lib/authStorage";
+import { RECOGNISE_URL } from "../constants/apiUrl";
+import type { ApiErrorBody } from "../types/form";
 
 export type RecogniseResult = {
   brand: string | null;
@@ -9,31 +11,20 @@ export type RecogniseResult = {
   category: ApplianceCategory | null;
 };
 
+const FALLBACK_MESSAGE = "辨識失敗，請稍後再試";
+
 export async function recogniseNameplate(file: File): Promise<RecogniseResult> {
   const image = await compressImage(file);
 
-  // 這支送的是原始圖片位元組、不是 JSON，所以沒有走 axios，也就沒有
-  // src/api/system.ts 那個自動補 token 的攔截器，要自己帶。
-  const token = getToken();
-
-  const response = await fetch("/api/recognise", {
-    method: "POST",
-    headers: {
-      "Content-Type": "image/jpeg",
-      ...(token ? { authorization: token } : {}),
-    },
-    body: image,
-  });
-
-  const body: unknown = await response.json();
-
-  if (!response.ok) {
-    const message =
-      typeof body === "object" && body !== null && "message" in body
-        ? String(body.message)
-        : "辨識失敗，請稍後再試";
-    throw new Error(message);
+  try {
+    const { data } = await axios.post<RecogniseResult>(RECOGNISE_URL, image, {
+      headers: { "Content-Type": "image/jpeg" },
+    });
+    return data;
+  } catch (error) {
+    const message = axios.isAxiosError<ApiErrorBody>(error)
+      ? error.response?.data?.message
+      : undefined;
+    throw new Error(message || FALLBACK_MESSAGE, { cause: error });
   }
-
-  return body as RecogniseResult;
 }
