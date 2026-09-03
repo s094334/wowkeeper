@@ -33,10 +33,10 @@ export function PrivacyDialog(props: PrivacyDialogProps) {
     <>
       <div
         onClick={onClose}
-        className="wk-scrim fixed inset-0 z-30 bg-black/25"
+        className="wk-fade-in fixed inset-0 z-30 bg-black/25"
       />
 
-      <div className="wk-scrim bg-surface fixed inset-x-5 top-1/2 z-40 max-h-[80dvh] -translate-y-1/2 overflow-y-auto rounded-sm p-5 shadow-[0_8px_24px_rgba(70,52,34,0.14)] sm:inset-x-0 sm:mx-auto sm:max-w-110">
+      <div className="wk-fade-in bg-surface fixed inset-x-5 top-1/2 z-40 max-h-[80dvh] -translate-y-1/2 overflow-y-auto rounded-sm p-5 shadow-[0_8px_24px_rgba(70,52,34,0.14)] sm:inset-x-0 sm:mx-auto sm:max-w-110">
         <div className="mb-3 flex items-start justify-between gap-4">
           <h2 className="text-base font-semibold tracking-[-0.01em]">
             {privacyTitle}
