@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useForm, type SubmitHandler } from "react-hook-form";
+import type { SubmitHandler } from "react-hook-form";
 import { useNavigate } from "react-router";
 import { recogniseNameplate } from "../../api/recognise";
 import AlertCircle from "../../assets/icons/AlertCircle.svg?react";
@@ -17,6 +17,7 @@ import {
   type PartFormValues,
 } from "../../components/PartFields/fields";
 import { StepIndicator } from "../../components/StepIndicator";
+import { useApplianceForm } from "../../hooks/useApplianceForm";
 import { useApplianceMutations } from "../../hooks/useAppliances";
 import { PartsStep } from "./PartsStep";
 import { StepActions } from "./StepActions";
@@ -42,10 +43,7 @@ export function NewAppliance() {
     setValue,
     getValues,
     formState: { errors },
-  } = useForm<ApplianceFormValues>({
-    mode: "onBlur",
-    defaultValues: { category: "" },
-  });
+  } = useApplianceForm();
 
   const handleScan = async (file: File) => {
     setIsScanning(true);

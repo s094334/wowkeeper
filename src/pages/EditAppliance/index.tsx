@@ -1,4 +1,4 @@
-import { useForm, type SubmitHandler } from "react-hook-form";
+import type { SubmitHandler } from "react-hook-form";
 import { useNavigate, useParams } from "react-router";
 import ArrowLeft from "../../assets/icons/ArrowLeft.svg?react";
 import Trash from "../../assets/icons/Trash.svg?react";
@@ -9,6 +9,7 @@ import {
 } from "../../components/ApplianceFields/fields";
 import { FormError } from "../../components/common/FormError";
 import { ApplianceNotFound } from "../../components/ApplianceNotFound";
+import { useApplianceForm } from "../../hooks/useApplianceForm";
 import { useAppliance, useApplianceMutations } from "../../hooks/useAppliances";
 
 const PAGE =
@@ -30,15 +31,12 @@ export function EditAppliance() {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm<ApplianceFormValues>({
-    mode: "onBlur",
-    values: {
-      name: appliance?.name ?? "",
-      brand: appliance?.brand ?? "",
-      model: appliance?.model ?? "",
-      purchasedAt: appliance?.purchasedAt ?? "",
-      category: appliance?.category ?? "",
-    },
+  } = useApplianceForm({
+    name: appliance?.name ?? "",
+    brand: appliance?.brand ?? "",
+    model: appliance?.model ?? "",
+    purchasedAt: appliance?.purchasedAt ?? "",
+    category: appliance?.category ?? "",
   });
 
   if (isLoading) {
