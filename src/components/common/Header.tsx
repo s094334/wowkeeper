@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link } from "react-router";
 import LogOut from "../../assets/icons/LogOut.svg?react";
 import Shield from "../../assets/icons/Shield.svg?react";
-import { PrivacyDialog } from "../PrivacyNotice";
+import { PrivacyDialog } from "../PrivacyNotice/PrivacyDialog";
 import User from "../../assets/icons/User.svg?react";
 import type { StoredUser } from "../../lib/authStorage";
 

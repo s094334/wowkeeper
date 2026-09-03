@@ -9,7 +9,6 @@ type PartListProps = {
 
 export function PartList(props: PartListProps) {
   const { applianceId, parts } = props;
-  // 整批共用同一個「今天」，同一頁的耗材才不會因為跨過午夜而各自算出不同的基準日。
   const items = withPartStatus(parts);
 
   return (
