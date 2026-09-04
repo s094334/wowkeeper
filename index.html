@@ -9,11 +9,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>哇管家 WowKeeper</title>
 
-    <link
-      rel="icon"
-      href="/WowkeeperLogo.svg"
-      type="image/svg+xml"
-    />
+    <link rel="icon" href="/WowkeeperLogo.svg" type="image/svg+xml" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <meta name="theme-color" content="#fbf8f3" />
     <meta property="og:type" content="website" />
@@ -42,7 +38,29 @@
     />
   </head>
   <body>
-    <div id="root"></div>
+    <noscript>
+      <div
+        style="
+          max-width: 32rem;
+          margin: 20vh auto;
+          padding: 0 1.5rem;
+          text-align: center;
+          line-height: 1.8;
+          font-family: &quot;Noto Sans TC&quot;, system-ui, sans-serif;
+          color: #2b2622;
+        "
+      >
+        <h1 style="font-size: 1.25rem; font-weight: 600; margin: 0 0 0.5rem">
+          請開啟 JavaScript
+        </h1>
+        <p style="color: #7a6e63; font-size: 0.9375rem; margin: 0">
+          哇管家需要 JavaScript
+          才能運作。請在瀏覽器設定中開啟，然後重新整理這個頁面。
+        </p>
+      </div>
+    </noscript>
+
+    <div id="root" style="background: #f3ebe1; min-height: 100dvh"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
