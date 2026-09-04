@@ -4,7 +4,7 @@ import type {
   FieldValues,
   UseFormRegister,
 } from "react-hook-form";
-import type { FieldConfig } from "../../types/form";
+import type { FieldConfig } from "../types/form";
 
 type FormFieldProps<T extends FieldValues> = FieldConfig<T> & {
   register: UseFormRegister<T>;

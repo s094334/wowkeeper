@@ -1,6 +1,6 @@
-import { ApplianceCard } from "../../components/ApplianceCard";
+import { ApplianceCard } from "./ApplianceCard";
 import { EmptyState } from "./EmptyState";
-import { FormError } from "../../components/common/FormError";
+import { FormError } from "../../components/FormError";
 import type { ApplianceWithStatus } from "../../lib/applianceStatus";
 
 type ApplianceListProps = {

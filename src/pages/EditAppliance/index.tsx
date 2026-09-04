@@ -7,7 +7,7 @@ import {
   toApplianceInput,
   type ApplianceFormValues,
 } from "../../components/ApplianceFields/fields";
-import { FormError } from "../../components/common/FormError";
+import { FormError } from "../../components/FormError";
 import { ApplianceNotFound } from "../../components/ApplianceNotFound";
 import { useApplianceForm } from "../../hooks/useApplianceForm";
 import { useAppliance, useApplianceMutations } from "../../hooks/useAppliances";

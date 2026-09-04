@@ -9,8 +9,8 @@ import {
   toApplianceInput,
   type ApplianceFormValues,
 } from "../../components/ApplianceFields/fields";
-import { FormError } from "../../components/common/FormError";
-import { PhotoCapture } from "../../components/common/PhotoCapture";
+import { FormError } from "../../components/FormError";
+import { PhotoCapture } from "./PhotoCapture";
 import { PrivacyNotice } from "../../components/PrivacyNotice";
 import {
   toPartInput,

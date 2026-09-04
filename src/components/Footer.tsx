@@ -1,4 +1,4 @@
-import { PrivacyNotice } from "../PrivacyNotice";
+import { PrivacyNotice } from "./PrivacyNotice";
 
 export function Footer() {
   return (

@@ -3,7 +3,7 @@ import ArrowLeft from "../../assets/icons/ArrowLeft.svg?react";
 import Pencil from "../../assets/icons/Pencil.svg?react";
 import Plus from "../../assets/icons/Plus.svg?react";
 import { ApplianceNotFound } from "../../components/ApplianceNotFound";
-import { FormError } from "../../components/common/FormError";
+import { FormError } from "../../components/FormError";
 import { PartList } from "./PartList";
 import { useAppliance } from "../../hooks/useAppliances";
 import {

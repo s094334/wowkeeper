@@ -3,7 +3,7 @@ import { useNavigate, useParams } from "react-router";
 import ArrowLeft from "../../assets/icons/ArrowLeft.svg?react";
 import Trash from "../../assets/icons/Trash.svg?react";
 import { ApplianceNotFound } from "../../components/ApplianceNotFound";
-import { FormError } from "../../components/common/FormError";
+import { FormError } from "../../components/FormError";
 import { PartFields } from "../../components/PartFields";
 import {
   toPartInput,
