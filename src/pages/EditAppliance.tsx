@@ -1,16 +1,16 @@
 import type { SubmitHandler } from "react-hook-form";
 import { useNavigate, useParams } from "react-router";
-import ArrowLeft from "../../assets/icons/ArrowLeft.svg?react";
-import Trash from "../../assets/icons/Trash.svg?react";
-import { ApplianceFields } from "../../components/ApplianceFields";
+import ArrowLeft from "../assets/icons/ArrowLeft.svg?react";
+import Trash from "../assets/icons/Trash.svg?react";
+import { ApplianceFields } from "../components/ApplianceFields";
 import {
   toApplianceInput,
   type ApplianceFormValues,
-} from "../../components/ApplianceFields/fields";
-import { FormError } from "../../components/FormError";
-import { ApplianceNotFound } from "../../components/ApplianceNotFound";
-import { useApplianceForm } from "../../hooks/useApplianceForm";
-import { useAppliance, useApplianceMutations } from "../../hooks/useAppliances";
+} from "../components/ApplianceFields/fields";
+import { FormError } from "../components/FormError";
+import { ApplianceNotFound } from "../components/ApplianceNotFound";
+import { useApplianceForm } from "../hooks/useApplianceForm";
+import { useAppliance, useApplianceMutations } from "../hooks/useAppliances";
 
 const PAGE =
   "flex flex-1 flex-col gap-6 px-5 py-8 sm:mx-auto sm:w-full sm:max-w-150 sm:px-8";
