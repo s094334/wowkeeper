@@ -1,7 +1,6 @@
 import { Link } from "react-router";
 import type { LampStatus, Part } from "../../types/appliance";
 import Pencil from "../../assets/icons/Pencil.svg?react";
-import { GHOST_BUTTON } from "./classes";
 import { StatusLamp } from "../../components/StatusLamp";
 
 type PartCardProps = {
@@ -36,7 +35,7 @@ export function PartCard(props: PartCardProps) {
 
         <Link
           to={`/appliances/${applianceId}/parts/${part.id}/edit`}
-          className={`${GHOST_BUTTON} h-[34px]`}
+          className="border-cream-400 bg-surface hover:bg-cream-100 hover:border-cream-600 flex h-[34px] shrink-0 cursor-pointer items-center gap-1.5 rounded-xs border px-3 text-[13px] font-medium whitespace-nowrap"
         >
           <Pencil width={14} height={14} />
           編輯耗材

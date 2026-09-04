@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import { Link, useNavigate, useParams } from "react-router";
 import ArrowLeft from "../../assets/icons/ArrowLeft.svg?react";
 import Pencil from "../../assets/icons/Pencil.svg?react";
@@ -10,7 +11,14 @@ import {
   APPLIANCE_CATEGORY_LABELS,
   APPLIANCE_ICONS,
 } from "../../data/appliances";
-import { BOTTOM_BUTTON, GHOST_BUTTON, PAGE } from "./classes";
+
+function Page({ children }: { children: ReactNode }) {
+  return (
+    <main className="flex min-h-0 flex-1 flex-col overflow-hidden sm:mx-auto sm:w-full sm:max-w-150">
+      {children}
+    </main>
+  );
+}
 
 export function ApplianceDetail() {
   const navigate = useNavigate();
@@ -19,9 +27,9 @@ export function ApplianceDetail() {
 
   if (isLoading) {
     return (
-      <main className={PAGE}>
+      <Page>
         <p className="text-ink-muted px-8 pt-6 text-xs">載入中…</p>
-      </main>
+      </Page>
     );
   }
 
@@ -31,11 +39,11 @@ export function ApplianceDetail() {
 
   if (!appliance) {
     return (
-      <main className={PAGE}>
+      <Page>
         <div className="px-8 pt-6">
           <FormError>{errorLog[0] ?? "發生錯誤，請稍後再試"}</FormError>
         </div>
-      </main>
+      </Page>
     );
   }
 
@@ -43,7 +51,7 @@ export function ApplianceDetail() {
   const Icon = APPLIANCE_ICONS[category];
 
   return (
-    <main className={PAGE}>
+    <Page>
       <header className="flex shrink-0 flex-col gap-3.5 px-8 pt-5">
         <div className="flex flex-col gap-2 border-cream-500 border-b-2 pb-5">
           <div className="flex items-center justify-between gap-2.5">
@@ -56,7 +64,7 @@ export function ApplianceDetail() {
 
             <Link
               to={`/appliances/${appliance.id}/edit`}
-              className={`${GHOST_BUTTON} h-[34px]`}
+              className="border-cream-400 bg-surface hover:bg-cream-100 hover:border-cream-600 flex h-[34px] shrink-0 cursor-pointer items-center gap-1.5 rounded-xs border px-3 text-[13px] font-medium whitespace-nowrap"
             >
               <Pencil width={14} height={14} />
               編輯家電
@@ -93,7 +101,7 @@ export function ApplianceDetail() {
         <button
           type="button"
           onClick={() => navigate(-1)}
-          className={BOTTOM_BUTTON}
+          className="bg-surface text-ink border-cream-400 hover:bg-terracotta hover:border-terracotta hover:text-white flex h-11 flex-1 cursor-pointer items-center justify-center gap-2 rounded-sm border text-[15px] font-medium"
         >
           <ArrowLeft width={16} height={16} />
           上一頁
@@ -101,12 +109,12 @@ export function ApplianceDetail() {
 
         <Link
           to={`/appliances/${appliance.id}/parts/new`}
-          className={BOTTOM_BUTTON}
+          className="bg-surface text-ink border-cream-400 hover:bg-terracotta hover:border-terracotta hover:text-white flex h-11 flex-1 cursor-pointer items-center justify-center gap-2 rounded-sm border text-[15px] font-medium"
         >
           <Plus width={16} height={16} />
           新增耗材
         </Link>
       </div>
-    </main>
+    </Page>
   );
 }
