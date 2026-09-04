@@ -1,8 +1,8 @@
 import { Link } from "react-router";
 import type { LampStatus, Part } from "../../types/appliance";
 import Pencil from "../../assets/icons/Pencil.svg?react";
-import { GHOST_BUTTON } from "../../pages/ApplianceDetail/classes";
-import { StatusLamp } from "../StatusLamp";
+import { GHOST_BUTTON } from "./classes";
+import { StatusLamp } from "../../components/StatusLamp";
 
 type PartCardProps = {
   applianceId: string;

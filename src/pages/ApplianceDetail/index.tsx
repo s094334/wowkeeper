@@ -4,7 +4,7 @@ import Pencil from "../../assets/icons/Pencil.svg?react";
 import Plus from "../../assets/icons/Plus.svg?react";
 import { ApplianceNotFound } from "../../components/ApplianceNotFound";
 import { FormError } from "../../components/common/FormError";
-import { PartList } from "../../components/PartList";
+import { PartList } from "./PartList";
 import { useAppliance } from "../../hooks/useAppliances";
 import {
   APPLIANCE_CATEGORY_LABELS,

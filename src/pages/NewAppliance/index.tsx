@@ -16,7 +16,7 @@ import {
   toPartInput,
   type PartFormValues,
 } from "../../components/PartFields/fields";
-import { StepIndicator } from "../../components/StepIndicator";
+import { StepIndicator } from "./StepIndicator";
 import { useApplianceForm } from "../../hooks/useApplianceForm";
 import { useApplianceMutations } from "../../hooks/useAppliances";
 import { PartsStep } from "./PartsStep";

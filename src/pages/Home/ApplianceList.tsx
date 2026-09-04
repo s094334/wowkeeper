@@ -1,5 +1,5 @@
 import { ApplianceCard } from "../../components/ApplianceCard";
-import { EmptyState } from "../../components/EmptyState";
+import { EmptyState } from "./EmptyState";
 import { FormError } from "../../components/common/FormError";
 import type { ApplianceWithStatus } from "../../lib/applianceStatus";
 

@@ -1,6 +1,6 @@
 import type { Part } from "../../types/appliance";
 import { withPartStatus } from "../../lib/applianceStatus";
-import { PartCard } from "../PartCard";
+import { PartCard } from "./PartCard";
 
 type PartListProps = {
   applianceId: string;

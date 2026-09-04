@@ -1,6 +1,6 @@
 import { useState } from "react";
 import type { LampStatus } from "../../types/appliance";
-import { NewApplianceButton } from "../../components/NewApplianceButton";
+import { NewApplianceButton } from "./NewApplianceButton";
 import { useAppliances } from "../../hooks/useAppliances";
 import { withStatus } from "../../lib/applianceStatus";
 import { ApplianceList } from "./ApplianceList";
