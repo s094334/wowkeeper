@@ -16,7 +16,7 @@ import {
 import { MAIL_FROM, renderDigest } from "./email.js";
 import { findOverdueByUser, markNotified } from "./notifications.js";
 import { authenticate } from "./lib/auth.js";
-import { taipeiToday } from "./lib/date.js";
+import { taipeiToday } from "../shared/maintenance.js";
 import { fail, ok } from "./lib/response.js";
 
 const appliancesCollection = new URLPattern({ pathname: "/api/appliances/" });
