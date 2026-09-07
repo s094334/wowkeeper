@@ -1,6 +1,6 @@
 import { Link } from "react-router";
 import type { Appliance, LampStatus } from "../../types/appliance";
-import { APPLIANCE_ICONS } from "../../data/appliances";
+import { APPLIANCE_ICONS } from "../../constants/applianceCategories";
 import { StatusLamp } from "../../components/StatusLamp";
 
 const DOT_CLASS: Record<LampStatus, string> = {

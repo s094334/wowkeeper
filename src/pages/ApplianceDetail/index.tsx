@@ -10,7 +10,7 @@ import { useAppliance } from "../../hooks/useAppliances";
 import {
   APPLIANCE_CATEGORY_LABELS,
   APPLIANCE_ICONS,
-} from "../../data/appliances";
+} from "../../constants/applianceCategories";
 
 function Page({ children }: { children: ReactNode }) {
   return (
