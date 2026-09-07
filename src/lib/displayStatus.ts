@@ -3,7 +3,7 @@ import {
   daysUntilDue,
   statusOf,
   type LampStatus,
-} from "./status";
+} from "./computeStatus";
 import type { Appliance, Part } from "../types/appliance";
 
 function daysText(status: LampStatus, daysLeft: number): string {

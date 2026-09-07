@@ -2,7 +2,7 @@ import { useState } from "react";
 import type { LampStatus } from "../../types/appliance";
 import { NewApplianceButton } from "./NewApplianceButton";
 import { useAppliances } from "../../hooks/useAppliances";
-import { withStatus } from "../../lib/applianceStatus";
+import { withStatus } from "../../lib/displayStatus";
 import { ApplianceList } from "./ApplianceList";
 import { FilterTabs, type FilterKey } from "./FilterTabs";
 
