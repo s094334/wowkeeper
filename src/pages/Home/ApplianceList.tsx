@@ -1,7 +1,7 @@
-import { ApplianceCard } from "../../components/ApplianceCard";
-import { EmptyState } from "../../components/EmptyState";
-import { FormError } from "../../components/common/FormError";
-import type { ApplianceWithStatus } from "../../lib/applianceStatus";
+import { ApplianceCard } from "./ApplianceCard";
+import { EmptyState } from "./EmptyState";
+import { FormError } from "../../components/FormError";
+import type { ApplianceWithStatus } from "../../lib/displayStatus";
 
 type ApplianceListProps = {
   items: ApplianceWithStatus[];

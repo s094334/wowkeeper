@@ -1,8 +1,13 @@
 import { Link } from "react-router";
 import type { Appliance, LampStatus } from "../../types/appliance";
-import { APPLIANCE_ICONS } from "../../data/appliances";
-import { StatusLamp } from "../StatusLamp";
-import { DOT_CLASS } from "./classes";
+import { APPLIANCE_ICONS } from "../../constants/applianceCategories";
+import { StatusLamp } from "../../components/StatusLamp";
+
+const DOT_CLASS: Record<LampStatus, string> = {
+  overdue: "wk-dot-overdue",
+  soon: "wk-dot-soon",
+  ok: "wk-dot-ok",
+};
 
 type ApplianceCardProps = {
   appliance: Appliance;

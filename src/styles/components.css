@@ -1,0 +1,136 @@
+/* ---- 動畫關鍵影格 ---- */
+@keyframes wk-rise {
+  from {
+    transform: translateY(100%);
+  }
+}
+
+@keyframes wk-fade {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes wk-drop {
+  from {
+    transform: translateY(-6px);
+  }
+}
+
+@layer components {
+  .wk-card {
+    background: var(--color-surface);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-card);
+  }
+  .wk-card-outline {
+    background: var(--color-surface);
+    border: 1px solid var(--color-cream-400);
+    border-radius: var(--radius-sm);
+  }
+
+  /* ---- 主要行動按鈕 ---- */
+  .wk-cta {
+    background: var(--color-terracotta);
+    color: var(--color-surface);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-cta);
+    height: 50px;
+    font-weight: 500;
+  }
+  .wk-cta:hover {
+    background: var(--color-terracotta-hover);
+  }
+  .wk-cta-ghost {
+    background: var(--color-surface);
+    color: var(--color-ink);
+    border: 1px solid var(--color-cream-400);
+    border-radius: var(--radius-lg);
+    height: 50px;
+    font-weight: 500;
+  }
+  .wk-cta-ghost:hover {
+    background: var(--color-cream-100);
+    border-color: var(--color-cream-600);
+  }
+
+  /* ---- 狀態標籤（圓點 + 文字）---- */
+  .wk-lamp {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 9px;
+    border-radius: 9999px;
+    font-size: var(--text-2xs);
+    font-weight: 500;
+    white-space: nowrap;
+  }
+  .wk-lamp-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 9999px;
+    flex-shrink: 0;
+  }
+
+  .wk-lamp-overdue {
+    background: var(--color-lamp-red-bg);
+    color: var(--color-lamp-red-fg);
+  }
+  .wk-lamp-overdue .wk-lamp-dot {
+    background: var(--color-lamp-red);
+  }
+  .wk-lamp-soon {
+    background: var(--color-lamp-amber-bg);
+    color: var(--color-lamp-amber-fg);
+  }
+  .wk-lamp-soon .wk-lamp-dot {
+    background: var(--color-lamp-amber);
+  }
+  .wk-lamp-ok {
+    background: var(--color-lamp-green-bg);
+    color: var(--color-lamp-green-fg);
+  }
+  .wk-lamp-ok .wk-lamp-dot {
+    background: var(--color-lamp-green);
+  }
+
+  /* ---- 狀態圓點（家電卡片右上角）---- */
+  .wk-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 9999px;
+  }
+  .wk-dot-overdue {
+    background: var(--color-lamp-red);
+    box-shadow: 0 0 0 3px var(--color-lamp-red-ring);
+  }
+  .wk-dot-soon {
+    background: var(--color-lamp-amber);
+    box-shadow: 0 0 0 3px var(--color-lamp-amber-ring);
+  }
+  .wk-dot-ok {
+    background: var(--color-lamp-green);
+    box-shadow: 0 0 0 3px var(--color-lamp-green-ring);
+  }
+
+  /* ---- 會員選單動畫：手機由下滑入、桌機由上落下 ---- */
+  .wk-sheet {
+    animation: wk-rise 0.22s cubic-bezier(0.32, 0.72, 0, 1);
+  }
+  .wk-fade-in {
+    animation: wk-fade 0.22s ease-out;
+  }
+
+  @media (min-width: 768px) {
+    .wk-sheet {
+      animation: wk-drop 0.14s ease-out;
+    }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wk-sheet,
+  .wk-fade-in {
+    animation: none;
+  }
+}

@@ -1,10 +1,10 @@
 import { useState } from "react";
 import { Link } from "react-router";
-import LogOut from "../../assets/icons/LogOut.svg?react";
-import Shield from "../../assets/icons/Shield.svg?react";
-import { PrivacyDialog } from "../PrivacyNotice";
-import User from "../../assets/icons/User.svg?react";
-import type { StoredUser } from "../../lib/authStorage";
+import LogOut from "../assets/icons/LogOut.svg?react";
+import Shield from "../assets/icons/Shield.svg?react";
+import { PrivacyDialog } from "./PrivacyNotice/PrivacyDialog";
+import User from "../assets/icons/User.svg?react";
+import type { StoredUser } from "../lib/authStorage";
 
 type HeaderProps = {
   user: StoredUser;
@@ -53,7 +53,7 @@ export function Header(props: HeaderProps) {
             <>
               <div
                 onClick={() => setOpen(false)}
-                className="wk-scrim fixed inset-0 z-30 bg-black/25"
+                className="wk-fade-in fixed inset-0 z-30 bg-black/25"
               />
 
               <div className="wk-sheet bg-surface fixed inset-x-0 bottom-0 z-40 rounded-t-lg pb-[env(safe-area-inset-bottom)] sm:mx-auto sm:max-w-110 md:absolute md:inset-x-auto md:top-full md:right-0 md:bottom-auto md:mx-0 md:mt-2 md:w-70 md:rounded-sm md:border md:border-cream-400 md:pb-0 md:shadow-[0_8px_24px_rgba(70,52,34,0.14)]">

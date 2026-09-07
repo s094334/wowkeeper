@@ -1,6 +1,6 @@
 import type { FieldErrors, UseFormRegister } from "react-hook-form";
-import { APPLIANCE_CATEGORY_LABELS } from "../../data/appliances";
-import { FormField } from "../common/FormField";
+import { APPLIANCE_CATEGORY_LABELS } from "../../constants/applianceCategories";
+import { FormField } from "../FormField";
 import { fields, type ApplianceFormValues } from "./fields";
 
 type ApplianceFieldsProps = {

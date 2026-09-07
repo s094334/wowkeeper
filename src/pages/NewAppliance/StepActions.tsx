@@ -8,7 +8,6 @@ type StepActionsProps = {
   setStep: (step: number) => void;
   isSubmitting: boolean;
   onCancel: () => void;
-  // 進第三步前要先驗證家電表單，所以由頁面提供
   onNext: () => void;
 };
 

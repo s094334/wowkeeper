@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useForm, type SubmitHandler } from "react-hook-form";
+import type { SubmitHandler } from "react-hook-form";
 import { useNavigate } from "react-router";
 import { recogniseNameplate } from "../../api/recognise";
 import AlertCircle from "../../assets/icons/AlertCircle.svg?react";
@@ -9,14 +9,15 @@ import {
   toApplianceInput,
   type ApplianceFormValues,
 } from "../../components/ApplianceFields/fields";
-import { FormError } from "../../components/common/FormError";
-import { PhotoCapture } from "../../components/common/PhotoCapture";
+import { FormError } from "../../components/FormError";
+import { PhotoCapture } from "./PhotoCapture";
 import { PrivacyNotice } from "../../components/PrivacyNotice";
 import {
   toPartInput,
   type PartFormValues,
 } from "../../components/PartFields/fields";
-import { StepIndicator } from "../../components/StepIndicator";
+import { StepIndicator } from "./StepIndicator";
+import { useApplianceForm } from "../../hooks/useApplianceForm";
 import { useApplianceMutations } from "../../hooks/useAppliances";
 import { PartsStep } from "./PartsStep";
 import { StepActions } from "./StepActions";
@@ -42,10 +43,7 @@ export function NewAppliance() {
     setValue,
     getValues,
     formState: { errors },
-  } = useForm<ApplianceFormValues>({
-    mode: "onBlur",
-    defaultValues: { category: "" },
-  });
+  } = useApplianceForm();
 
   const handleScan = async (file: File) => {
     setIsScanning(true);

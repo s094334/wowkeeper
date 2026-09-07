@@ -99,7 +99,6 @@ type UseApplianceResult = {
 export function useAppliance(id: string | undefined): UseApplianceResult {
   const query = useQuery<Appliance>({
     queryKey: applianceKeys.detail(id ?? ""),
-    // enabled 已經擋掉沒有 id 的情況，queryFn 只會在 id 有值時被呼叫。
     queryFn: ({ signal }) => getAppliance(id!, { signal }),
     enabled: Boolean(id),
   });

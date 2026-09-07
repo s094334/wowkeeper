@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import type { FieldErrors, UseFormRegister } from "react-hook-form";
-import { FormField } from "../common/FormField";
+import { FormField } from "../FormField";
 import { ACTION_LABELS, fields, type PartFormValues } from "./fields";
 
 type PartFieldsProps = {

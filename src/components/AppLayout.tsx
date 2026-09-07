@@ -1,8 +1,8 @@
 import { Outlet, useNavigate } from "react-router";
 import { Header } from "./Header";
 import { Footer } from "./Footer";
-import { signOut } from "../../api/system";
-import { clearAuth, getUser, type StoredUser } from "../../lib/authStorage";
+import { signOut } from "../api/system";
+import { clearAuth, getUser, type StoredUser } from "../lib/authStorage";
 
 const DEFAULT_USER: StoredUser = { name: "使用者", email: "" };
 
