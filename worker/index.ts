@@ -1,3 +1,7 @@
+// import { env } from "cloudflare:workers";
+import { httpServerHandler } from "cloudflare:node";
+import express from "express";
+
 import { recognise } from "./recognise.js";
 import { signUp, signIn, signOut } from "./users.js";
 import {
@@ -7,12 +11,7 @@ import {
   updateAppliance,
   deleteAppliance,
 } from "./appliances.js";
-import {
-  createPart,
-  updatePart,
-  deletePart,
-  renewPart,
-} from "./parts.js";
+import { createPart, updatePart, deletePart, renewPart } from "./parts.js";
 import { MAIL_FROM, renderDigest } from "./email.js";
 import { findOverdueByUser, markNotified } from "./notifications.js";
 import { authenticate } from "./lib/auth.js";
@@ -201,9 +200,31 @@ async function runDailyNotifications(env: Env): Promise<NotifyResult> {
   return { today, sent, failed: digests.length - sent, filtered };
 }
 
+const app = express();
+const PORT = 3000;
+
+// Middleware to parse JSON bodies
+app.use(express.json());
+
+app.listen(PORT);
+const expressHandler = httpServerHandler({ port: PORT });
+
+// express 並存的入口
+const expressRoute: string[] = [];
+
+function isExpressRoute(pathname: string): boolean {
+  return expressRoute.some(
+    (route) => pathname === route || pathname.startsWith(`${route}/`),
+  );
+}
+
 export default {
-  async fetch(request, env) {
+  async fetch(request, env, ctx) {
     try {
+      const { pathname } = new URL(request.url);
+      if (isExpressRoute(pathname)) {
+        return await expressHandler.fetch!(request, env, ctx);
+      }
       return await handle(request, env);
     } catch (error) {
       console.error("未預期的錯誤", error);
