@@ -1,6 +1,6 @@
 import { BrowserRouter, Route, Routes } from "react-router";
-import { AppLayout } from "./components/common/AppLayout";
-import { CheckAuth } from "./components/common/CheckAuth";
+import { AppLayout } from "./components/AppLayout";
+import { CheckAuth } from "./components/CheckAuth";
 import { ApplianceDetail } from "./pages/ApplianceDetail";
 import { EditAppliance } from "./pages/EditAppliance";
 import { EditPart } from "./pages/EditPart";
@@ -9,7 +9,6 @@ import { Home } from "./pages/Home";
 import { Login } from "./pages/Login";
 import { NewAppliance } from "./pages/NewAppliance";
 import { Register } from "./pages/Register";
-import "./App.css";
 
 function App() {
   return (

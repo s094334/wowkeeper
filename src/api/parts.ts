@@ -1,5 +1,5 @@
 import axios from "axios";
-import { partsUrl } from "../constants/apiUrl";
+import { PARTS_URL } from "../constants/apiUrl";
 import type {
   CreatePartResponse,
   Part,
@@ -12,7 +12,7 @@ export async function postPart(
   body: PartInput,
 ): Promise<Part> {
   const { data } = await axios.post<CreatePartResponse>(
-    partsUrl(applianceId),
+    PARTS_URL(applianceId),
     body,
   );
   return data.newPart;
@@ -24,7 +24,7 @@ export async function putPart(
   body: PartInput,
 ): Promise<void> {
   await axios.put<PartMessageResponse>(
-    `${partsUrl(applianceId)}${partId}`,
+    `${PARTS_URL(applianceId)}${partId}`,
     body,
   );
 }
@@ -33,7 +33,7 @@ export async function deletePart(
   applianceId: string,
   partId: string,
 ): Promise<void> {
-  await axios.delete<PartMessageResponse>(`${partsUrl(applianceId)}${partId}`);
+  await axios.delete<PartMessageResponse>(`${PARTS_URL(applianceId)}${partId}`);
 }
 
 export async function patchRenewPart(
@@ -41,6 +41,6 @@ export async function patchRenewPart(
   partId: string,
 ): Promise<void> {
   await axios.patch<PartMessageResponse>(
-    `${partsUrl(applianceId)}${partId}/renew`,
+    `${PARTS_URL(applianceId)}${partId}/renew`,
   );
 }
