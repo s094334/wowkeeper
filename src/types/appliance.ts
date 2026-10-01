@@ -1,4 +1,4 @@
-export type { LampStatus } from "../lib/status";
+export type { LampStatus } from "../lib/computeStatus";
 
 export type ApplianceCategory =
   | "aircon"

@@ -4,6 +4,7 @@ export type UserRow = {
   password_hash: string;
   nickname: string;
   created_at: number;
+  notifications_enabled: number;
 };
 
 export type ApplianceRow = {

@@ -3,7 +3,7 @@ import Plus from "../../assets/icons/Plus.svg?react";
 import X from "../../assets/icons/X.svg?react";
 import { PartFields } from "../../components/PartFields";
 import type { PartFormValues } from "../../components/PartFields/fields";
-import { usePartForm } from "../../components/PartFields/usePartForm";
+import { usePartForm } from "../../hooks/usePartForm";
 import AlertCircle from "../../assets/icons/AlertCircle.svg?react";
 
 type PartsStepProps = {
