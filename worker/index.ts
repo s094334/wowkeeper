@@ -3,7 +3,7 @@ import { httpServerHandler } from "cloudflare:node";
 import express from "express";
 
 import { recognise } from "./recognise.js";
-import { signUp, signIn, signOut } from "./users.js";
+import usersRouter, { signUp, signIn, signOut } from "./users.js";
 import {
   listAppliances,
   getAppliance,
@@ -205,12 +205,13 @@ const PORT = 3000;
 
 // Middleware to parse JSON bodies
 app.use(express.json());
+app.use("/api/users", usersRouter);
 
 app.listen(PORT);
 const expressHandler = httpServerHandler({ port: PORT });
 
 // express 並存的入口
-const expressRoute: string[] = [];
+const expressRoute: string[] = ["/api/users"];
 
 function isExpressRoute(pathname: string): boolean {
   return expressRoute.some(

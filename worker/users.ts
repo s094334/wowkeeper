@@ -1,7 +1,14 @@
+import express from "express";
+import { env } from "cloudflare:workers";
+import type {
+  Request as ExpressRequest,
+  Response as ExpressResponse,
+} from "express";
+
 import { generateId } from "./lib/id.js";
 import { hashPassword, verifyPassword } from "./lib/password.js";
 import { signJwt } from "./lib/jwt.js";
-import { ok, fail } from "./lib/response.js";
+import { ok, fail, statusOk, statusFail } from "./lib/response.js";
 import { authenticate } from "./lib/auth.js";
 import type { UserRow } from "./lib/types.js";
 
@@ -44,6 +51,61 @@ async function readJson(
     return null;
   }
 }
+
+const router = express.Router();
+
+router.post(
+  "/sign_up",
+  async (request: ExpressRequest, response: ExpressResponse) => {
+    const body = request.body;
+    const email = body?.email;
+    const password = body?.password;
+    const nickname = body?.nickname;
+
+    if (
+      !isNonEmptyString(email) ||
+      !isNonEmptyString(password) ||
+      !isNonEmptyString(nickname)
+    ) {
+      return statusFail(response, "欄位驗證失敗");
+    }
+    if (password.length < 6) {
+      return statusFail(response, "欄位驗證失敗");
+    }
+
+    const normalizedEmail = email.trim().toLowerCase();
+    if (!EMAIL_PATTERN.test(normalizedEmail)) {
+      return statusFail(response, "欄位驗證失敗");
+    }
+
+    // 回 403 而不是 400：讓被擋下的人知道是「不開放」，不是自己填錯。
+    // 訊息不透露名單內容，也不區分「不在名單上」與其他失敗。
+    const allowlist = signupAllowlist(env);
+    if (allowlist && !allowlist.has(normalizedEmail)) {
+      return statusFail(response, "目前未開放註冊", 403);
+    }
+
+    const existing = await env.DB.prepare(
+      "SELECT id FROM users WHERE email = ?",
+    )
+      .bind(normalizedEmail)
+      .first();
+
+    if (existing) {
+      return statusFail(response, "用戶已存在");
+    }
+
+    const id = generateId("usr");
+    const passwordHash = await hashPassword(password);
+
+    await env.DB.prepare(
+      "INSERT INTO users (id, email, password_hash, nickname, created_at) VALUES (?, ?, ?, ?, ?)",
+    )
+      .bind(id, normalizedEmail, passwordHash, nickname.trim(), Date.now())
+      .run();
+    return statusOk(response, { uid: id }, 201);
+  },
+);
 
 export async function signUp(request: Request, env: Env): Promise<Response> {
   const body = await readJson(request);
@@ -92,6 +154,48 @@ export async function signUp(request: Request, env: Env): Promise<Response> {
 
   return Response.json({ status: true, uid: id }, { status: 201 });
 }
+
+router.post(
+  "/sign_in",
+  async (request: ExpressRequest, response: ExpressResponse) => {
+    const body = request.body;
+    const email = body?.email;
+    const password = body?.password;
+
+    if (!isNonEmptyString(email) || !isNonEmptyString(password)) {
+      return statusFail(response, "欄位驗證失敗");
+    }
+
+    const normalizedEmail = email.trim().toLowerCase();
+    const user = await env.DB.prepare("SELECT * FROM users WHERE email = ?")
+      .bind(normalizedEmail)
+      .first<UserRow>();
+
+    if (!user) {
+      return statusFail(response, "用戶不存在", 404);
+    }
+
+    const passwordMatches = await verifyPassword(password, user.password_hash);
+    if (!passwordMatches) {
+      return statusFail(response, "帳號密碼驗證錯誤", 401);
+    }
+
+    const { token, exp } = await signJwt(
+      { uid: user.id },
+      env.JWT_SECRET,
+      TOKEN_TTL_SECONDS,
+    );
+    return statusOk(response, {
+      status: true,
+      exp,
+      token,
+      nickname: user.nickname,
+      email: user.email,
+    });
+  },
+);
+
+export default router;
 
 export async function signIn(request: Request, env: Env): Promise<Response> {
   const body = await readJson(request);
