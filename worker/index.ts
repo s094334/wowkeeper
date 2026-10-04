@@ -36,13 +36,13 @@ async function handle(request: Request, env: Env): Promise<Response> {
   const { method } = request;
 
   if (pathname === "/api/recognise") {
-    const auth = await authenticate(request, env);
+    const auth = await authenticate(request.headers.get("authorization"), env);
     if (!auth) return fail("辨識失敗", 401);
     return recognise(request, env);
   }
 
   if (pathname === "/api/notifications/run" && method === "POST") {
-    const auth = await authenticate(request, env);
+    const auth = await authenticate(request.headers.get("authorization"), env);
     if (!auth) return fail("執行失敗", 401);
     return ok(await runDailyNotifications(env));
   }
@@ -59,7 +59,7 @@ async function handle(request: Request, env: Env): Promise<Response> {
 
   const renewMatch = partRenew.exec(url);
   if (renewMatch && method === "PATCH") {
-    const auth = await authenticate(request, env);
+    const auth = await authenticate(request.headers.get("authorization"), env);
     if (!auth) return fail("狀態更新失敗", 401);
     const { applianceId, partId } = renewMatch.pathname.groups as {
       applianceId: string;
@@ -75,12 +75,18 @@ async function handle(request: Request, env: Env): Promise<Response> {
       partId: string;
     };
     if (method === "PUT") {
-      const auth = await authenticate(request, env);
+      const auth = await authenticate(
+        request.headers.get("authorization"),
+        env,
+      );
       if (!auth) return fail("更新失敗", 401);
       return updatePart(request, env, auth.uid, applianceId, partId);
     }
     if (method === "DELETE") {
-      const auth = await authenticate(request, env);
+      const auth = await authenticate(
+        request.headers.get("authorization"),
+        env,
+      );
       if (!auth) return fail("刪除失敗", 401);
       return deletePart(env, auth.uid, applianceId, partId);
     }
@@ -90,7 +96,10 @@ async function handle(request: Request, env: Env): Promise<Response> {
   if (partsMatch) {
     const applianceId = partsMatch.pathname.groups.applianceId as string;
     if (method === "POST") {
-      const auth = await authenticate(request, env);
+      const auth = await authenticate(
+        request.headers.get("authorization"),
+        env,
+      );
       if (!auth) return fail("新增失敗", 401);
       return createPart(request, env, auth.uid, applianceId);
     }
@@ -100,17 +109,26 @@ async function handle(request: Request, env: Env): Promise<Response> {
   if (applianceMatch) {
     const id = applianceMatch.pathname.groups.id as string;
     if (method === "GET") {
-      const auth = await authenticate(request, env);
+      const auth = await authenticate(
+        request.headers.get("authorization"),
+        env,
+      );
       if (!auth) return fail("取得失敗", 401);
       return getAppliance(env, auth.uid, id);
     }
     if (method === "PUT") {
-      const auth = await authenticate(request, env);
+      const auth = await authenticate(
+        request.headers.get("authorization"),
+        env,
+      );
       if (!auth) return fail("更新失敗", 401);
       return updateAppliance(request, env, auth.uid, id);
     }
     if (method === "DELETE") {
-      const auth = await authenticate(request, env);
+      const auth = await authenticate(
+        request.headers.get("authorization"),
+        env,
+      );
       if (!auth) return fail("刪除失敗", 401);
       return deleteAppliance(env, auth.uid, id);
     }
@@ -118,12 +136,18 @@ async function handle(request: Request, env: Env): Promise<Response> {
 
   if (appliancesCollection.test(url)) {
     if (method === "GET") {
-      const auth = await authenticate(request, env);
+      const auth = await authenticate(
+        request.headers.get("authorization"),
+        env,
+      );
       if (!auth) return fail("取得失敗", 401);
       return listAppliances(env, auth.uid);
     }
     if (method === "POST") {
-      const auth = await authenticate(request, env);
+      const auth = await authenticate(
+        request.headers.get("authorization"),
+        env,
+      );
       if (!auth) return fail("新增失敗", 401);
       return createAppliance(request, env, auth.uid);
     }

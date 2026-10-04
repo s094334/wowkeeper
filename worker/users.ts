@@ -233,7 +233,7 @@ export async function signIn(request: Request, env: Env): Promise<Response> {
 }
 
 export async function signOut(request: Request, env: Env): Promise<Response> {
-  const auth = await authenticate(request, env);
+  const auth = await authenticate(request.headers.get("authorization"), env);
   if (!auth) {
     return fail("登出失敗");
   }
