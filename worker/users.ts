@@ -186,7 +186,6 @@ router.post(
       TOKEN_TTL_SECONDS,
     );
     return statusOk(response, {
-      status: true,
       exp,
       token,
       nickname: user.nickname,
@@ -231,6 +230,30 @@ export async function signIn(request: Request, env: Env): Promise<Response> {
     { status: 200 },
   );
 }
+
+router.post(
+  "/sign_out",
+  async (request: ExpressRequest, response: ExpressResponse) => {
+    const auth = await authenticate(request.headers.authorization, env);
+    if (!auth) {
+      return statusFail(response, "登出失敗");
+    }
+
+    const nowSeconds = Math.floor(Date.now() / 1000);
+
+    // 跟寫入新黑名單紀錄同一趟 batch，順手把已經過期（token 自然失效、黑名單也用不到了）的
+    // 舊紀錄刪掉，讓 revoked_tokens 不會無限長大。
+    await env.DB.batch([
+      env.DB.prepare(
+        "INSERT OR REPLACE INTO revoked_tokens (jti, expires_at) VALUES (?, ?)",
+      ).bind(auth.jti, auth.exp),
+      env.DB.prepare("DELETE FROM revoked_tokens WHERE expires_at < ?").bind(
+        nowSeconds,
+      ),
+    ]);
+    return statusOk(response, { message: "登出成功" });
+  },
+);
 
 export async function signOut(request: Request, env: Env): Promise<Response> {
   const auth = await authenticate(request.headers.get("authorization"), env);
