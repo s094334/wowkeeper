@@ -11,6 +11,7 @@ import appliancesRouter, {
   updateAppliance,
   deleteAppliance,
 } from "./appliances.js";
+import recogniseRouter from "./recognise.ts";
 import { createPart, updatePart, deletePart, renewPart } from "./parts.js";
 import { MAIL_FROM, renderDigest } from "./email.js";
 import { findOverdueByUser, markNotified } from "./notifications.js";
@@ -231,12 +232,17 @@ const PORT = 3000;
 app.use(express.json());
 app.use("/api/users", usersRouter);
 app.use("/api/appliances", appliancesRouter);
+app.use("/api/recognise", recogniseRouter);
 
 app.listen(PORT);
 const expressHandler = httpServerHandler({ port: PORT });
 
 // express 並存的入口
-const expressRoute: string[] = ["/api/users", "/api/appliances"];
+const expressRoute: string[] = [
+  "/api/users",
+  "/api/appliances",
+  "/api/recognise",
+];
 
 function isExpressRoute(pathname: string): boolean {
   return expressRoute.some(

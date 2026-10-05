@@ -1,3 +1,11 @@
+import express from "express";
+import { env } from "cloudflare:workers";
+import type {
+  Request as ExpressRequest,
+  Response as ExpressResponse,
+} from "express";
+import { authMiddleware } from "./lib/authMiddleware.js";
+
 import { RECOGNISE_PROMPT } from "./prompt.js";
 
 const MODEL = "@cf/meta/llama-4-scout-17b-16e-instruct";
@@ -52,6 +60,83 @@ function text(value: unknown): string | null {
   const trimmed = value.trim().replace(/^["']|["']$/g, "");
   return trimmed && trimmed.toLowerCase() !== "null" ? trimmed : null;
 }
+
+const router = express.Router();
+
+router.post(
+  "/",
+  authMiddleware,
+  express.raw({ type: "image/*", limit: MAX_BYTES * 2 }),
+  async (request: ExpressRequest, response: ExpressResponse) => {
+    if (!Buffer.isBuffer(request.body)) {
+      return response.status(415).json({ message: "請直接傳圖片位元組" });
+    }
+    const bytes = request.body;
+    const contentType = request.headers["content-type"] ?? "";
+
+    if (bytes.length === 0) {
+      return response.status(400).json({ message: "沒有收到圖片" });
+    }
+    if (bytes.length > MAX_BYTES) {
+      return response.status(413).json({ message: "圖片太大，請重拍" });
+    }
+
+    let payload: unknown;
+    try {
+      const output = await env.AI.run(MODEL, {
+        messages: [
+          {
+            role: "user",
+            content: [
+              { type: "text", text: RECOGNISE_PROMPT },
+              {
+                type: "image_url",
+                image_url: { url: toDataUri(bytes, contentType) },
+              },
+            ],
+          },
+        ],
+        max_tokens: 1024,
+      });
+      payload = "response" in output ? output.response : null;
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      const outOfQuota = /3036|4006|account limited|capacity/i.test(message);
+      console.error("AI 辨識失敗", message);
+      return response.status(503).json({
+        message: outOfQuota ? "今日辨識次數已用完" : "辨識服務暫時無法使用",
+      });
+    }
+
+    const parsed =
+      typeof payload === "object" && payload !== null
+        ? (payload as Record<string, unknown>)
+        : parseJson(typeof payload === "string" ? payload : "");
+
+    if (!parsed) {
+      console.error(
+        "AI 回應無法解析",
+        typeof payload,
+        payload && typeof payload === "object" ? Object.keys(payload) : "",
+      );
+      return response.status(422).json({
+        message: "看不清楚，請手動填寫",
+      });
+    }
+
+    const category = text(parsed.category);
+
+    const result: RecogniseResult = {
+      brand: text(parsed.brand),
+      model: text(parsed.model),
+      productName: text(parsed.product_name),
+      category: category && CATEGORIES.has(category) ? category : null,
+    };
+    return response.json(result);
+  },
+);
+
+export default router;
 
 export async function recognise(request: Request, env: Env): Promise<Response> {
   if (request.method !== "POST") {
