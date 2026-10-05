@@ -4,7 +4,7 @@ import express from "express";
 
 import { recognise } from "./recognise.js";
 import usersRouter, { signUp, signIn, signOut } from "./users.js";
-import {
+import appliancesRouter, {
   listAppliances,
   getAppliance,
   createAppliance,
@@ -230,12 +230,13 @@ const PORT = 3000;
 // Middleware to parse JSON bodies
 app.use(express.json());
 app.use("/api/users", usersRouter);
+app.use("/api/appliances", appliancesRouter);
 
 app.listen(PORT);
 const expressHandler = httpServerHandler({ port: PORT });
 
 // express 並存的入口
-const expressRoute: string[] = ["/api/users"];
+const expressRoute: string[] = ["/api/users", "/api/appliances"];
 
 function isExpressRoute(pathname: string): boolean {
   return expressRoute.some(

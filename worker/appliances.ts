@@ -1,6 +1,15 @@
+import express from "express";
+import { env } from "cloudflare:workers";
+import type {
+  Request as ExpressRequest,
+  Response as ExpressResponse,
+} from "express";
+import { authMiddleware } from "./lib/authMiddleware.js";
+import partsRouter from "./parts.js";
+
 import { generateId } from "./lib/id.js";
 import { INSERT_PART_SQL, validatePartInput } from "./parts.js";
-import { ok, fail } from "./lib/response.js";
+import { ok, fail, statusOk, statusFail } from "./lib/response.js";
 import type { ApplianceRow, PartRow } from "./lib/types.js";
 
 type PartInputBody = {
@@ -116,6 +125,44 @@ function validatePartsInput(value: unknown): string | null {
   return null;
 }
 
+const router = express.Router();
+router.use("/:applianceId/parts", partsRouter);
+
+router.get(
+  "/",
+  authMiddleware,
+  async (_request: ExpressRequest, response: ExpressResponse) => {
+    const uid = response.locals.uid as string;
+    const [appliances, parts] = await Promise.all([
+      env.DB.prepare(
+        "SELECT * FROM appliances WHERE user_id = ? ORDER BY created_at DESC",
+      )
+        .bind(uid)
+        .all<ApplianceRow>(),
+      env.DB.prepare(
+        `SELECT parts.* FROM parts
+       JOIN appliances ON appliances.id = parts.appliance_id
+       WHERE appliances.user_id = ?
+       ORDER BY parts.created_at ASC`,
+      )
+        .bind(uid)
+        .all<PartRow>(),
+    ]);
+
+    const partsByAppliance = new Map<string, PartRow[]>();
+    for (const part of parts.results) {
+      const existing = partsByAppliance.get(part.appliance_id);
+      if (existing) existing.push(part);
+      else partsByAppliance.set(part.appliance_id, [part]);
+    }
+    return statusOk(response, {
+      data: appliances.results.map((row) =>
+        serializeAppliance(row, partsByAppliance.get(row.id) ?? []),
+      ),
+    });
+  },
+);
+
 export async function listAppliances(env: Env, uid: string): Promise<Response> {
   // 兩支查詢同時發，耗材用 JOIN 一次撈完整個使用者的，避免每台家電各查一次（N+1），
   // 也不必把家電 id 一個個綁進 IN (...)。
@@ -149,6 +196,29 @@ export async function listAppliances(env: Env, uid: string): Promise<Response> {
   });
 }
 
+router.get(
+  "/:id",
+  authMiddleware,
+  async (request: ExpressRequest, response: ExpressResponse) => {
+    const uid = response.locals.uid as string;
+    const { id } = request.params;
+    const appliance = await env.DB.prepare(
+      "SELECT * FROM appliances WHERE id = ? AND user_id = ?",
+    )
+      .bind(id, uid)
+      .first<ApplianceRow>();
+    if (!appliance) return statusFail(response, "找不到該家電", 404);
+
+    const { results: parts } = await env.DB.prepare(
+      "SELECT * FROM parts WHERE appliance_id = ? ORDER BY created_at ASC",
+    )
+      .bind(id)
+      .all<PartRow>();
+
+    return statusOk(response, { data: serializeAppliance(appliance, parts) });
+  },
+);
+
 export async function getAppliance(
   env: Env,
   uid: string,
@@ -169,6 +239,80 @@ export async function getAppliance(
 
   return ok({ data: serializeAppliance(appliance, parts) });
 }
+
+router.post(
+  "/",
+  authMiddleware,
+  async (request: ExpressRequest, response: ExpressResponse) => {
+    const body = request.body;
+    const uid = response.locals.uid as string;
+
+    const validationError = validateApplianceInput(body);
+    if (validationError || !body) return statusFail(response, "新增失敗");
+    if (validatePartsInput(body.parts)) return statusFail(response, "新增失敗");
+
+    const name = (body.name as string).trim();
+    const category = body.category as string;
+    const brand = (body.brand as string | undefined) ?? null;
+    const model = (body.model as string | undefined) ?? null;
+    const purchasedAt = (body.purchasedAt as string | undefined) ?? null;
+
+    const id = generateId("apl");
+    const now = Date.now();
+
+    const partRows: PartRow[] = (
+      (body.parts as PartInputBody[] | undefined) ?? []
+    ).map((part) => ({
+      id: generateId("prt"),
+      appliance_id: id,
+      name: part.name.trim(),
+      cycle_months: part.cycleMonths,
+      action: part.action,
+      last_replaced_at: part.lastReplacedAt,
+      last_notified_at: null,
+      created_at: now,
+      updated_at: now,
+    }));
+
+    // batch 是一個 SQL transaction：其中一句失敗會整批回滾，所以不會留下
+    // 「家電建好了、但耗材只寫進去一半」的資料。
+    await env.DB.batch([
+      env.DB.prepare(
+        `INSERT INTO appliances (id, user_id, name, category, brand, model, purchased_at, created_at, updated_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      ).bind(id, uid, name, category, brand, model, purchasedAt, now, now),
+      ...partRows.map((part) =>
+        env.DB.prepare(INSERT_PART_SQL).bind(
+          part.id,
+          part.appliance_id,
+          part.name,
+          part.cycle_months,
+          part.action,
+          part.last_replaced_at,
+          part.created_at,
+          part.updated_at,
+        ),
+      ),
+    ]);
+
+    const row: ApplianceRow = {
+      id,
+      user_id: uid,
+      name,
+      category,
+      brand,
+      model,
+      purchased_at: purchasedAt,
+      created_at: now,
+      updated_at: now,
+    };
+    return statusOk(
+      response,
+      { status: true, newAppliance: serializeAppliance(row, partRows) },
+      201,
+    );
+  },
+);
 
 export async function createAppliance(
   request: Request,
@@ -242,6 +386,39 @@ export async function createAppliance(
   );
 }
 
+router.put(
+  "/:id",
+  authMiddleware,
+  async (request: ExpressRequest, response: ExpressResponse) => {
+    const body = request.body;
+    const uid = response.locals.uid as string;
+    const { id } = request.params;
+    const existing = await env.DB.prepare(
+      "SELECT id FROM appliances WHERE id = ? AND user_id = ?",
+    )
+      .bind(id, uid)
+      .first();
+    if (!existing) return statusFail(response, "找不到該家電", 404);
+
+    const validationError = validateApplianceInput(body);
+    if (validationError || !body) return statusFail(response, "更新失敗");
+
+    const name = (body.name as string).trim();
+    const category = body.category as string;
+    const brand = (body.brand as string | undefined) ?? null;
+    const model = (body.model as string | undefined) ?? null;
+    const purchasedAt = (body.purchasedAt as string | undefined) ?? null;
+
+    await env.DB.prepare(
+      `UPDATE appliances SET name = ?, category = ?, brand = ?, model = ?, purchased_at = ?, updated_at = ?
+     WHERE id = ? AND user_id = ?`,
+    )
+      .bind(name, category, brand, model, purchasedAt, Date.now(), id, uid)
+      .run();
+    return statusOk(response, { message: "更新成功" });
+  },
+);
+
 export async function updateAppliance(
   request: Request,
   env: Env,
@@ -275,6 +452,27 @@ export async function updateAppliance(
   return ok({ message: "更新成功" });
 }
 
+router.delete(
+  "/:id",
+  authMiddleware,
+  async (request: ExpressRequest, response: ExpressResponse) => {
+    const uid = response.locals.uid as string;
+    const { id } = request.params;
+    const existing = await env.DB.prepare(
+      "SELECT id FROM appliances WHERE id = ? AND user_id = ?",
+    )
+      .bind(id, uid)
+      .first();
+    if (!existing) return statusFail(response, "找不到該家電", 404);
+
+    await env.DB.batch([
+      env.DB.prepare("DELETE FROM parts WHERE appliance_id = ?").bind(id),
+      env.DB.prepare("DELETE FROM appliances WHERE id = ?").bind(id),
+    ]);
+    return statusOk(response, { message: "刪除成功" });
+  },
+);
+
 export async function deleteAppliance(
   env: Env,
   uid: string,
@@ -294,3 +492,5 @@ export async function deleteAppliance(
 
   return ok({ message: "刪除成功" });
 }
+
+export default router;

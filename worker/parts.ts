@@ -1,6 +1,14 @@
+import express from "express";
+import { env } from "cloudflare:workers";
+import type {
+  Request as ExpressRequest,
+  Response as ExpressResponse,
+} from "express";
+import { authMiddleware } from "./lib/authMiddleware.js";
+
 import { taipeiToday } from "../shared/maintenance.js";
 import { generateId } from "./lib/id.js";
-import { ok, fail } from "./lib/response.js";
+import { ok, fail, statusOk, statusFail } from "./lib/response.js";
 import type { PartRow } from "./lib/types.js";
 
 const ACTIONS = new Set(["replace", "clean"]);
@@ -72,6 +80,55 @@ async function findOwnedPart(
     .first<PartRow>();
 }
 
+const router = express.Router({ mergeParams: true });
+
+router.post(
+  "/",
+  authMiddleware,
+  async (
+    request: ExpressRequest<{ applianceId: string }>,
+    response: ExpressResponse,
+  ) => {
+    const uid = response.locals.uid as string;
+    const { applianceId } = request.params;
+    const appliance = await findOwnedAppliance(env, uid, applianceId);
+    if (!appliance) return statusFail(response, "找不到該家電", 404);
+
+    const body = request.body;
+    const validationError = validatePartInput(body);
+    if (validationError || !body) return statusFail(response, "新增失敗");
+
+    const name = (body.name as string).trim();
+    const cycleMonths = body.cycleMonths as number;
+    const action = body.action as "replace" | "clean";
+    const lastReplacedAt = body.lastReplacedAt as string;
+
+    const id = generateId("prt");
+    const now = Date.now();
+
+    await env.DB.prepare(INSERT_PART_SQL)
+      .bind(
+        id,
+        applianceId,
+        name,
+        cycleMonths,
+        action,
+        lastReplacedAt,
+        now,
+        now,
+      )
+      .run();
+
+    return statusOk(
+      response,
+      {
+        newPart: { id, name, cycleMonths, action, lastReplacedAt },
+      },
+      201,
+    );
+  },
+);
+
 export async function createPart(
   request: Request,
   env: Env,
@@ -106,6 +163,40 @@ export async function createPart(
   );
 }
 
+router.put(
+  "/:partId",
+  authMiddleware,
+  async (
+    request: ExpressRequest<{ applianceId: string; partId: string }>,
+    response: ExpressResponse,
+  ) => {
+    const uid = response.locals.uid as string;
+    const { applianceId, partId } = request.params;
+    const part = await findOwnedPart(env, uid, applianceId, partId);
+    if (!part) return statusFail(response, "找不到該耗材", 404);
+
+    const body = request.body;
+    const validationError = validatePartInput(body);
+    if (validationError || !body) return statusFail(response, "更新失敗");
+
+    const name = (body.name as string).trim();
+    const cycleMonths = body.cycleMonths as number;
+    const action = body.action as "replace" | "clean";
+    const lastReplacedAt = body.lastReplacedAt as string;
+
+    // 編輯有可能改到 last_replaced_at 或 cycle_months，兩者都會讓到期日移動，
+    // 所以跟 renewPart 一樣把通知紀錄清掉，讓新的週期重新判斷。
+    await env.DB.prepare(
+      `UPDATE parts SET name = ?, cycle_months = ?, action = ?, last_replaced_at = ?, last_notified_at = NULL, updated_at = ?
+     WHERE id = ?`,
+    )
+      .bind(name, cycleMonths, action, lastReplacedAt, Date.now(), partId)
+      .run();
+
+    return statusOk(response, { message: "更新成功" });
+  },
+);
+
 export async function updatePart(
   request: Request,
   env: Env,
@@ -137,6 +228,24 @@ export async function updatePart(
   return ok({ message: "更新成功" });
 }
 
+router.delete(
+  "/:partId",
+  authMiddleware,
+  async (
+    request: ExpressRequest<{ applianceId: string; partId: string }>,
+    response: ExpressResponse,
+  ) => {
+    const uid = response.locals.uid as string;
+    const { applianceId, partId } = request.params;
+    const part = await findOwnedPart(env, uid, applianceId, partId);
+    if (!part) return statusFail(response, "找不到該耗材", 404);
+
+    await env.DB.prepare("DELETE FROM parts WHERE id = ?").bind(partId).run();
+
+    return statusOk(response, { message: "刪除成功" });
+  },
+);
+
 export async function deletePart(
   env: Env,
   uid: string,
@@ -150,6 +259,32 @@ export async function deletePart(
 
   return ok({ message: "刪除成功" });
 }
+
+router.patch(
+  "/:partId/renew",
+  authMiddleware,
+  async (
+    request: ExpressRequest<{ applianceId: string; partId: string }>,
+    response: ExpressResponse,
+  ) => {
+    const uid = response.locals.uid as string;
+    const { applianceId, partId } = request.params;
+    const part = await findOwnedPart(env, uid, applianceId, partId);
+    if (!part) return statusFail(response, "找不到該耗材", 404);
+
+    const today = taipeiToday();
+
+    // last_notified_at 一併清空：它記錄的是「本週期是否已通知」，換新之後
+    // 週期重新起算，舊的通知紀錄就不再適用了。
+    await env.DB.prepare(
+      "UPDATE parts SET last_replaced_at = ?, last_notified_at = NULL, updated_at = ? WHERE id = ?",
+    )
+      .bind(today, Date.now(), partId)
+      .run();
+
+    return statusOk(response, { message: "狀態更新成功" });
+  },
+);
 
 export async function renewPart(
   env: Env,
@@ -172,3 +307,5 @@ export async function renewPart(
 
   return ok({ message: "狀態更新成功" });
 }
+
+export default router;
