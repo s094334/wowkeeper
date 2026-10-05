@@ -13,10 +13,8 @@ import appliancesRouter, {
 } from "./appliances.js";
 import recogniseRouter from "./recognise.ts";
 import { createPart, updatePart, deletePart, renewPart } from "./parts.js";
-import { MAIL_FROM, renderDigest } from "./email.js";
-import { findOverdueByUser, markNotified } from "./notifications.js";
+import notificationsRouter, { runDailyNotifications } from "./notifications.js";
 import { authenticate } from "./lib/auth.js";
-import { taipeiToday } from "../shared/maintenance.js";
 import { fail, ok } from "./lib/response.js";
 
 const appliancesCollection = new URLPattern({ pathname: "/api/appliances/" });
@@ -157,74 +155,6 @@ async function handle(request: Request, env: Env): Promise<Response> {
   return new Response(null, { status: 404 });
 }
 
-function allowedRecipients(env: Env): Set<string> | null {
-  const raw = env.NOTIFY_ALLOWLIST?.trim();
-  if (!raw) return null;
-  return new Set(
-    raw
-      .split(",")
-      .map((email) => email.trim().toLowerCase())
-      .filter(Boolean),
-  );
-}
-
-type NotifyResult = {
-  today: string;
-  sent: number;
-  failed: number;
-  filtered: number;
-};
-
-async function runDailyNotifications(env: Env): Promise<NotifyResult> {
-  const today = taipeiToday();
-  const allowlist = allowedRecipients(env);
-  const all = await findOverdueByUser(env, today);
-
-  const digests = allowlist
-    ? all.filter((digest) => allowlist.has(digest.email.toLowerCase()))
-    : all;
-
-  const filtered = all.length - digests.length;
-  if (filtered > 0) {
-    console.log(`[notify] 白名單過濾掉 ${filtered} 位收件人`);
-  }
-
-  if (digests.length === 0) {
-    console.log(`[notify] ${today} 沒有需要通知的項目`);
-    return { today, sent: 0, failed: 0, filtered };
-  }
-
-  let sent = 0;
-
-  for (const digest of digests) {
-    const { subject, text, html } = renderDigest(digest);
-
-    try {
-      await env.EMAIL.send({
-        to: digest.email,
-        from: MAIL_FROM,
-        subject,
-        text,
-        html,
-      });
-    } catch (error) {
-      console.error(`[notify] 寄給 ${digest.email} 失敗`, error);
-      continue;
-    }
-
-    await markNotified(
-      env,
-      digest.parts.map((part) => part.partId),
-      today,
-    );
-    sent++;
-    console.log(`[notify] 已寄給 ${digest.email}（${digest.parts.length} 項）`);
-  }
-
-  console.log(`[notify] ${today} 寄出 ${sent}/${digests.length} 封`);
-  return { today, sent, failed: digests.length - sent, filtered };
-}
-
 const app = express();
 const PORT = 3000;
 
@@ -233,6 +163,7 @@ app.use(express.json());
 app.use("/api/users", usersRouter);
 app.use("/api/appliances", appliancesRouter);
 app.use("/api/recognise", recogniseRouter);
+app.use("/api/notifications", notificationsRouter);
 
 app.listen(PORT);
 const expressHandler = httpServerHandler({ port: PORT });
@@ -242,6 +173,7 @@ const expressRoute: string[] = [
   "/api/users",
   "/api/appliances",
   "/api/recognise",
+  "/api/notifications",
 ];
 
 function isExpressRoute(pathname: string): boolean {
