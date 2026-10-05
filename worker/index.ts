@@ -1,6 +1,11 @@
 // import { env } from "cloudflare:workers";
 import { httpServerHandler } from "cloudflare:node";
 import express from "express";
+import {
+  type Request as ExpressRequest,
+  type Response as ExpressResponse,
+  type NextFunction,
+} from "express";
 
 import { recognise } from "./recognise.js";
 import usersRouter, { signUp, signIn, signOut } from "./users.js";
@@ -15,7 +20,7 @@ import recogniseRouter from "./recognise.ts";
 import { createPart, updatePart, deletePart, renewPart } from "./parts.js";
 import notificationsRouter, { runDailyNotifications } from "./notifications.js";
 import { authenticate } from "./lib/auth.js";
-import { fail, ok } from "./lib/response.js";
+import { fail, ok, statusFail } from "./lib/response.js";
 
 const appliancesCollection = new URLPattern({ pathname: "/api/appliances/" });
 const applianceItem = new URLPattern({ pathname: "/api/appliances/:id" });
@@ -164,6 +169,17 @@ app.use("/api/users", usersRouter);
 app.use("/api/appliances", appliancesRouter);
 app.use("/api/recognise", recogniseRouter);
 app.use("/api/notifications", notificationsRouter);
+app.use(
+  (
+    error: Error,
+    _request: ExpressRequest,
+    response: ExpressResponse,
+    _next: NextFunction,
+  ) => {
+    console.error("未預期的錯誤", error);
+    return statusFail(response, "伺服器發生錯誤", 500);
+  },
+);
 
 app.listen(PORT);
 const expressHandler = httpServerHandler({ port: PORT });
