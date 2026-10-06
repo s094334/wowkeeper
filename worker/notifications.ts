@@ -1,4 +1,14 @@
-import { SOON_WITHIN_DAYS } from "../shared/maintenance.js";
+import express from "express";
+import { env } from "cloudflare:workers";
+import type {
+  Request as ExpressRequest,
+  Response as ExpressResponse,
+} from "express";
+import { authMiddleware } from "./lib/authMiddleware.js";
+import { statusOk } from "./lib/response.js";
+
+import { taipeiToday, SOON_WITHIN_DAYS } from "../shared/maintenance.js";
+import { MAIL_FROM, renderDigest } from "./email.js";
 import { DUE_AT_SQL, daysBetween } from "./lib/date.js";
 
 export const NOTIFY_SECOND_LEAD_DAYS = 7;
@@ -137,3 +147,83 @@ export async function markNotified(
     ),
   );
 }
+
+function allowedRecipients(env: Env): Set<string> | null {
+  const raw = env.NOTIFY_ALLOWLIST?.trim();
+  if (!raw) return null;
+  return new Set(
+    raw
+      .split(",")
+      .map((email) => email.trim().toLowerCase())
+      .filter(Boolean),
+  );
+}
+
+type NotifyResult = {
+  today: string;
+  sent: number;
+  failed: number;
+  filtered: number;
+};
+
+export async function runDailyNotifications(env: Env): Promise<NotifyResult> {
+  const today = taipeiToday();
+  const allowlist = allowedRecipients(env);
+  const all = await findOverdueByUser(env, today);
+
+  const digests = allowlist
+    ? all.filter((digest) => allowlist.has(digest.email.toLowerCase()))
+    : all;
+
+  const filtered = all.length - digests.length;
+  if (filtered > 0) {
+    console.log(`[notify] 白名單過濾掉 ${filtered} 位收件人`);
+  }
+
+  if (digests.length === 0) {
+    console.log(`[notify] ${today} 沒有需要通知的項目`);
+    return { today, sent: 0, failed: 0, filtered };
+  }
+
+  let sent = 0;
+
+  for (const digest of digests) {
+    const { subject, text, html } = renderDigest(digest);
+
+    try {
+      await env.EMAIL.send({
+        to: digest.email,
+        from: MAIL_FROM,
+        subject,
+        text,
+        html,
+      });
+    } catch (error) {
+      console.error(`[notify] 寄給 ${digest.email} 失敗`, error);
+      continue;
+    }
+
+    await markNotified(
+      env,
+      digest.parts.map((part) => part.partId),
+      today,
+    );
+    sent++;
+    console.log(`[notify] 已寄給 ${digest.email}（${digest.parts.length} 項）`);
+  }
+
+  console.log(`[notify] ${today} 寄出 ${sent}/${digests.length} 封`);
+  return { today, sent, failed: digests.length - sent, filtered };
+}
+
+const router = express.Router();
+
+router.post(
+  "/run",
+  authMiddleware,
+  async (_request: ExpressRequest, response: ExpressResponse) => {
+    return statusOk(response, await runDailyNotifications(env));
+  },
+);
+
+export default router;

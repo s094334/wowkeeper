@@ -12,10 +12,9 @@ export type AuthResult = {
  * 驗證簽章、到期時間，並確認尚未被登出黑名單（revoked_tokens）撤銷。
  */
 export async function authenticate(
-  request: Request,
+  token: string | null | undefined,
   env: Env,
 ): Promise<AuthResult | null> {
-  const token = request.headers.get("authorization");
   if (!token) return null;
 
   const payload = await verifyJwt(token, env.JWT_SECRET);
