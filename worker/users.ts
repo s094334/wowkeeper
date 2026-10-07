@@ -79,7 +79,7 @@ router.post(
       .first();
 
     if (existing) {
-      return statusFail(response, "用戶已存在");
+      return statusFail(response, "欄位驗證失敗");
     }
 
     const id = generateId("usr");
@@ -111,7 +111,9 @@ router.post(
       .first<UserRow>();
 
     if (!user) {
-      return statusFail(response, "用戶不存在", 404);
+      // 查無使用者時也跑一次同樣成本的雜湊，讓兩條失敗路徑耗時一致
+      await hashPassword(password);
+      return statusFail(response, "帳號密碼驗證錯誤", 401);
     }
 
     const passwordMatches = await verifyPassword(password, user.password_hash);
