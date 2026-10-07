@@ -140,7 +140,7 @@ router.post(
   async (request: ExpressRequest, response: ExpressResponse) => {
     const auth = await authenticate(request.headers.authorization, env);
     if (!auth) {
-      return statusFail(response, "登出失敗");
+      return statusFail(response, "登出失敗", 401);
     }
 
     const nowSeconds = Math.floor(Date.now() / 1000);
