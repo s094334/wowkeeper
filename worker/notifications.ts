@@ -3,9 +3,9 @@ import { env } from "cloudflare:workers";
 import type {
   Request as ExpressRequest,
   Response as ExpressResponse,
+  NextFunction,
 } from "express";
-import { authMiddleware } from "./lib/authMiddleware.js";
-import { statusOk } from "./lib/response.js";
+import { statusFail, statusOk } from "./lib/response.js";
 
 import { taipeiToday, SOON_WITHIN_DAYS } from "../shared/maintenance.js";
 import { MAIL_FROM, renderDigest } from "./email.js";
@@ -203,11 +203,17 @@ export async function runDailyNotifications(env: Env): Promise<NotifyResult> {
       continue;
     }
 
-    await markNotified(
-      env,
-      digest.parts.map((part) => part.partId),
-      today,
-    );
+    try {
+      await markNotified(
+        env,
+        digest.parts.map((part) => part.partId),
+        today,
+      );
+    } catch (error) {
+      console.error(`[notify] 標記 ${digest.email} 失敗`, error);
+      continue;
+    }
+
     sent++;
     console.log(`[notify] 已寄給 ${digest.email}（${digest.parts.length} 項）`);
   }
@@ -218,9 +224,38 @@ export async function runDailyNotifications(env: Env): Promise<NotifyResult> {
 
 const router = express.Router();
 
+async function secretMatches(
+  provided: string,
+  expected: string,
+): Promise<boolean> {
+  const encoder = new TextEncoder();
+  const [a, b] = await Promise.all([
+    crypto.subtle.digest("SHA-256", encoder.encode(provided)),
+    crypto.subtle.digest("SHA-256", encoder.encode(expected)),
+  ]);
+  return crypto.subtle.timingSafeEqual(a, b);
+}
+
+const opsAuthMiddleware = async (
+  request: ExpressRequest,
+  response: ExpressResponse,
+  next: NextFunction,
+) => {
+  const expected = env.NOTIFY_SECRET?.trim();
+  if (!expected) {
+    return statusFail(response, "驗證失敗", 500);
+  }
+  const provided = request.get("wowkeeper-notify-trigger")?.trim();
+  if (!provided || !(await secretMatches(provided, expected))) {
+    return statusFail(response, "驗證失敗", 401);
+  }
+
+  next();
+};
+
 router.post(
   "/run",
-  authMiddleware,
+  opsAuthMiddleware,
   async (_request: ExpressRequest, response: ExpressResponse) => {
     return statusOk(response, await runDailyNotifications(env));
   },
